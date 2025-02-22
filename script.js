@@ -28,10 +28,17 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "East Side Library", lat: 26.9118, lng: 75.7850 }
     ];
 
+    // Function to create "Get Directions" link
+    function getDirectionsLink(lat, lng) {
+        return `<a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank">
+                    <button class="directions-btn">Get Directions</button>
+                </a>`;
+    }
+
     // Add markers for libraries
     libraries.forEach(library => {
         L.marker([library.lat, library.lng]).addTo(map)
-            .bindPopup(`<b>${library.name}</b>`);
+            .bindPopup(`<b>${library.name}</b><br>${getDirectionsLink(library.lat, library.lng)}`);
     });
 
     // Search function
@@ -48,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
             results.forEach(lib => {
                 let div = document.createElement('div');
                 div.classList.add('library-item');
-                div.innerHTML = `<h3>${lib.name}</h3>`;
+                div.innerHTML = `<h3>${lib.name}</h3>${getDirectionsLink(lib.lat, lib.lng)}`;
                 libraryList.appendChild(div);
             });
         }
