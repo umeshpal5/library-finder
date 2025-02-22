@@ -2,6 +2,12 @@ document.addEventListener("DOMContentLoaded", function () {
     displayLibraries();
 });
 
+// Toggle Admin Menu
+function toggleAdminMenu() {
+    let menu = document.getElementById("adminMenu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
 // Sample Libraries Data
 let libraries = [
     { name: "Central Library", location: "Downtown", lat: 26.9124, lng: 75.7873 },
@@ -17,80 +23,35 @@ function displayLibraries() {
         let div = document.createElement("div");
         div.classList.add("library-item");
         div.innerHTML = `<h3>${lib.name}</h3>
-                         <p>Location: ${lib.location}</p>
-                         <button onclick="getDirections(${lib.lat}, ${lib.lng})">Get Directions</button>`;
+                         <p>Location: ${lib.location}</p>`;
         libraryList.appendChild(div);
     });
 }
 
-// Search Library Function
-function searchLibrary() {
-    let query = document.getElementById("searchBox").value.trim().toLowerCase();
-    let filteredLibraries = libraries.filter(lib => lib.name.toLowerCase().includes(query));
-    let libraryList = document.getElementById("libraryList");
-    libraryList.innerHTML = "";
-
-    if (filteredLibraries.length === 0) {
-        libraryList.innerHTML = "<p>No libraries found.</p>";
-    } else {
-        filteredLibraries.forEach(lib => {
-            let div = document.createElement("div");
-            div.classList.add("library-item");
-            div.innerHTML = `<h3>${lib.name}</h3>
-                             <p>Location: ${lib.location}</p>
-                             <button onclick="getDirections(${lib.lat}, ${lib.lng})">Get Directions</button>`;
-            libraryList.appendChild(div);
-        });
-    }
+// Open and Close Login Modals
+function openSuperAdminLogin() {
+    document.getElementById("superAdminModal").style.display = "block";
 }
 
-// Get Directions Function
-function getDirections(lat, lng) {
-    window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
+function closeSuperAdminLogin() {
+    document.getElementById("superAdminModal").style.display = "none";
 }
 
-// Open and Close Login Modal
-function openLoginModal() {
-    document.getElementById("loginModal").style.display = "block";
+function openAdminLogin() {
+    document.getElementById("adminModal").style.display = "block";
 }
 
-function closeLoginModal() {
-    document.getElementById("loginModal").style.display = "none";
-}
-
-// Open and Close Admin Login Modal
-function openAdminLoginModal() {
-    document.getElementById("loginModal").style.display = "block";
-}
-
-function loginUser() {
-    let phoneNumber = document.getElementById("phoneNumber").value;
-    let email = document.getElementById("email").value;
-
-    if (phoneNumber && email) {
-        alert("Login successful!");
-        closeLoginModal();
-    } else {
-        alert("Please enter both Mobile Number and Email.");
-    }
+function closeAdminLogin() {
+    document.getElementById("adminModal").style.display = "none";
 }
 
 // Forgot Password Functionality
-function forgotPassword() {
-    document.getElementById("forgotPasswordModal").style.display = "block";
-}
-
-function closeForgotPasswordModal() {
-    document.getElementById("forgotPasswordModal").style.display = "none";
-}
-
-function resetPassword() {
-    let phone = document.getElementById("resetPhoneNumber").value;
-    let email = document.getElementById("resetEmail").value;
+function forgotPassword(userType) {
+    let phone = prompt("Enter your registered Mobile Number:");
+    let email = prompt("Enter your registered Email:");
 
     if (phone && email) {
-        alert("Password reset link sent to your email!");
-        closeForgotPasswordModal();
+        alert(`${userType} Password reset link sent to your email!`);
     } else {
         alert("Please enter registered Mobile Number and Email.");
     }
