@@ -1,9 +1,28 @@
-<h1>Library Finder</h1>
-<input type="text" id="searchBox" placeholder="Search for a library...">
-<button onclick="searchLibrary()">Search</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Finder</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Library Finder</h1>
+        <input type="text" id="searchBox" placeholder="Search Library...">
+        <button onclick="searchLibrary()">Search</button>
+    </header>
 
-<div id="map"></div>
-<div id="libraryList"></div>
+    <section>
+        <div id="map"></div>
+        <div id="libraryList"></div>
+    </section>
 
-<!-- Include Leaflet.js for map -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
