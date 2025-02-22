@@ -3,52 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Finder</title>
+    <title>Libradar</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
     <!-- Navigation Bar -->
     <nav>
-        <h1>Library Finder</h1>
-        <div class="nav-buttons">
-            <button onclick="openLoginModal()">User Login</button>
-            <button onclick="openAdminLoginModal()">Admin Login</button>
-        </div>
+        <div class="menu-icon" onclick="toggleAdminMenu()">☰</div>
+        <h1>Libradar</h1>
     </nav>
 
-    <!-- Search Bar -->
+    <!-- Admin Menu -->
+    <div id="adminMenu" class="admin-menu">
+        <button onclick="openSuperAdminLogin()">Super Admin Login</button>
+        <button onclick="openAdminLogin()">Admin Login</button>
+    </div>
+
+    <!-- Search Box -->
     <div class="search-container">
         <input type="text" id="searchBox" placeholder="Search for libraries...">
         <button onclick="searchLibrary()">Search</button>
     </div>
 
-    <!-- Library List -->
-    <div id="libraryList"></div>
-
-    <!-- Map Display -->
+    <!-- Map Section -->
     <div id="map"></div>
 
-    <!-- Login Modal (User & Admin) -->
-    <div id="loginModal" class="modal">
+    <!-- Super Admin Login Modal -->
+    <div id="superAdminModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeLoginModal()">&times;</span>
-            <h2>Login</h2>
-            <input type="text" id="phoneNumber" placeholder="Enter Mobile Number">
-            <input type="email" id="email" placeholder="Enter Email">
-            <button onclick="loginUser()">Login</button>
-            <p><a href="#" onclick="forgotPassword()">Forgot Password?</a></p>
+            <span class="close" onclick="closeSuperAdminLogin()">&times;</span>
+            <h2>Super Admin Login</h2>
+            <input type="text" id="superAdminPhone" placeholder="Enter Mobile Number">
+            <input type="email" id="superAdminEmail" placeholder="Enter Email">
+            <input type="password" id="superAdminPassword" placeholder="Enter Password">
+            <button onclick="loginSuperAdmin()">Login</button>
+            <p><a href="#" onclick="forgotPassword('superAdmin')">Forgot Password?</a></p>
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
-    <div id="forgotPasswordModal" class="modal">
+    <!-- Admin Login Modal -->
+    <div id="adminModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeForgotPasswordModal()">&times;</span>
-            <h2>Reset Password</h2>
-            <input type="text" id="resetPhoneNumber" placeholder="Enter Registered Mobile">
-            <input type="email" id="resetEmail" placeholder="Enter Registered Email">
-            <button onclick="resetPassword()">Reset Password</button>
+            <span class="close" onclick="closeAdminLogin()">&times;</span>
+            <h2>Admin Login</h2>
+            <input type="text" id="adminPhone" placeholder="Enter Mobile Number">
+            <input type="email" id="adminEmail" placeholder="Enter Email">
+            <input type="password" id="adminPassword" placeholder="Enter Password">
+            <button onclick="loginAdmin()">Login</button>
+            <p><a href="#" onclick="forgotPassword('admin')">Forgot Password?</a></p>
         </div>
     </div>
 
