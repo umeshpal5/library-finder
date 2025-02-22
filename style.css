@@ -15,23 +15,29 @@ header {
     font-size: 18px;
 }
 
-input, button {
+.search-container {
+    display: flex;
+    justify-content: center;
     padding: 10px;
-    margin: 5px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
 }
 
 input {
     width: 60%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 button {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
     background: #0056b3;
     color: white;
-    border: none;
     cursor: pointer;
+    margin-left: 5px;
 }
 
 button:hover {
@@ -88,4 +94,20 @@ button:hover {
 
 .directions-btn:hover {
     background: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    input {
+        width: 70%;
+    }
+
+    #map {
+        height: 300px;
+    }
+
+    .library-item {
+        flex-direction: column;
+        text-align: center;
+    }
 }
