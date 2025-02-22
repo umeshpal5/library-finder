@@ -62,38 +62,15 @@ button:hover {
     text-align: left;
 }
 
-/* Library item */
-.library-item {
+/* Admin Panel */
+.admin-container {
     background: white;
-    padding: 15px;
-    margin: 10px 0;
+    padding: 20px;
+    margin: 20px auto;
+    width: 90%;
+    max-width: 500px;
     border-radius: 5px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.library-item h3 {
-    margin: 0;
-    font-size: 18px;
-    color: #333;
-}
-
-/* Get Directions button */
-.directions-btn {
-    background: #28a745;
-    color: white;
-    padding: 8px 12px;
-    font-size: 14px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.directions-btn:hover {
-    background: #218838;
 }
 
 /* Responsive Design */
@@ -104,10 +81,5 @@ button:hover {
 
     #map {
         height: 300px;
-    }
-
-    .library-item {
-        flex-direction: column;
-        text-align: center;
     }
 }
