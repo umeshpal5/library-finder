@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Libradar</title>
+    <title>Libradar - Rajasthan</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
 </head>
 <body>
 
@@ -26,34 +27,11 @@
         <button onclick="searchLibrary()">Search</button>
     </div>
 
-    <!-- Map Section -->
+    <!-- Map Section (Rajasthan) -->
     <div id="map"></div>
 
-    <!-- Super Admin Login Modal -->
-    <div id="superAdminModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeSuperAdminLogin()">&times;</span>
-            <h2>Super Admin Login</h2>
-            <input type="text" id="superAdminPhone" placeholder="Enter Mobile Number">
-            <input type="email" id="superAdminEmail" placeholder="Enter Email">
-            <input type="password" id="superAdminPassword" placeholder="Enter Password">
-            <button onclick="loginSuperAdmin()">Login</button>
-            <p><a href="#" onclick="forgotPassword('superAdmin')">Forgot Password?</a></p>
-        </div>
-    </div>
-
-    <!-- Admin Login Modal -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAdminLogin()">&times;</span>
-            <h2>Admin Login</h2>
-            <input type="text" id="adminPhone" placeholder="Enter Mobile Number">
-            <input type="email" id="adminEmail" placeholder="Enter Email">
-            <input type="password" id="adminPassword" placeholder="Enter Password">
-            <button onclick="loginAdmin()">Login</button>
-            <p><a href="#" onclick="forgotPassword('admin')">Forgot Password?</a></p>
-        </div>
-    </div>
+    <!-- Library List -->
+    <div id="libraryList"></div>
 
     <script src="script.js"></script>
 </body>
