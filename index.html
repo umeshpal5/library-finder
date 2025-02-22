@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Finder</title>
-    
-    <!-- Leaflet CSS -->
+
+    <!-- Leaflet CSS for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
@@ -22,6 +22,18 @@
     <main>
         <div id="map"></div>
         <div id="libraryList"></div>
+
+        <!-- Super Admin Panel -->
+        <div id="adminPanel" class="admin-container" style="display: none;">
+            <h2>Super Admin - Library Management</h2>
+            <input type="text" id="libraryName" placeholder="Library Name">
+            <input type="text" id="libraryLat" placeholder="Latitude">
+            <input type="text" id="libraryLng" placeholder="Longitude">
+            <button onclick="addLibrary()">Add Library</button>
+            
+            <h3>Library Owner Requests</h3>
+            <ul id="pendingRequests"></ul>
+        </div>
     </main>
 
     <!-- Leaflet JS -->
