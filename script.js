@@ -1,99 +1,97 @@
 document.addEventListener("DOMContentLoaded", function () {
-    var map = L.map('map').setView([26.9124, 75.7873], 13); // Default: Jaipur, Rajasthan
-
-    // Load OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    let userMarker;
-
-    // Get user location
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var userLat = position.coords.latitude;
-            var userLng = position.coords.longitude;
-
-            userMarker = L.marker([userLat, userLng]).addTo(map)
-                .bindPopup("You are here").openPopup();
-
-            map.setView([userLat, userLng], 14);
-        });
-    }
-
-    // Sample library locations
-    var libraries = [
-        { name: "Central Library", lat: 26.9124, lng: 75.7873 },
-        { name: "West End Library", lat: 26.9122, lng: 75.7890 },
-        { name: "East Side Library", lat: 26.9118, lng: 75.7850 },
-        { name: "Rajasthan State Library", lat: 26.9150, lng: 75.7800 }
-    ];
-
-    function getDirectionsLink(lat, lng) {
-        return `<a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank">
-                    <button class="directions-btn">Get Directions</button>
-                </a>`;
-    }
-
-    function loadLibraries() {
-        libraries.forEach(library => {
-            L.marker([library.lat, library.lng]).addTo(map)
-                .bindPopup(`<b>${library.name}</b><br>${getDirectionsLink(library.lat, library.lng)}`);
-        });
-    }
-
-    loadLibraries();
-
-    window.searchLibrary = function () {
-        let query = document.getElementById('searchBox').value.trim().toLowerCase();
-        let libraryList = document.getElementById('libraryList');
-        libraryList.innerHTML = '';
-
-        let results = libraries.filter(lib => lib.name.toLowerCase().includes(query));
-
-        if (results.length === 0) {
-            libraryList.innerHTML = '<p>No libraries found.</p>';
-        } else {
-            results.forEach(lib => {
-                let div = document.createElement('div');
-                div.classList.add('library-item');
-                div.innerHTML = `<h3>${lib.name}</h3>${getDirectionsLink(lib.lat, lib.lng)}`;
-                libraryList.appendChild(div);
-            });
-        }
-    };
-
-    // Super Admin Authentication (Example Password: "admin123")
-    let isSuperAdmin = false;
-    let adminPassword = prompt("Enter Super Admin Password (Leave blank if you are a user):");
-
-    if (adminPassword === "admin123") {
-        isSuperAdmin = true;
-        document.getElementById('adminPanel').style.display = 'block';
-    }
-
-    window.addLibrary = function () {
-        if (!isSuperAdmin) {
-            alert("Only the Super Admin can add libraries!");
-            return;
-        }
-
-        let name = document.getElementById('libraryName').value.trim();
-        let lat = parseFloat(document.getElementById('libraryLat').value.trim());
-        let lng = parseFloat(document.getElementById('libraryLng').value.trim());
-
-        if (!name || isNaN(lat) || isNaN(lng)) {
-            alert("Please enter valid details!");
-            return;
-        }
-
-        libraries.push({ name, lat, lng });
-
-        L.marker([lat, lng]).addTo(map)
-            .bindPopup(`<b>${name}</b><br>${getDirectionsLink(lat, lng)}`);
-
-        document.getElementById('libraryName').value = "";
-        document.getElementById('libraryLat').value = "";
-        document.getElementById('libraryLng').value = "";
-    };
+    displayLibraries();
 });
+
+// Sample Libraries Data
+let libraries = [
+    { name: "Central Library", location: "Downtown", lat: 26.9124, lng: 75.7873 },
+    { name: "West End Library", location: "West End", lat: 26.8500, lng: 75.8100 },
+    { name: "East Side Library", location: "East Side", lat: 26.9200, lng: 75.7900 }
+];
+
+// Function to Display Libraries
+function displayLibraries() {
+    let libraryList = document.getElementById("libraryList");
+    libraryList.innerHTML = "";
+    libraries.forEach(lib => {
+        let div = document.createElement("div");
+        div.classList.add("library-item");
+        div.innerHTML = `<h3>${lib.name}</h3>
+                         <p>Location: ${lib.location}</p>
+                         <button onclick="getDirections(${lib.lat}, ${lib.lng})">Get Directions</button>`;
+        libraryList.appendChild(div);
+    });
+}
+
+// Search Library Function
+function searchLibrary() {
+    let query = document.getElementById("searchBox").value.trim().toLowerCase();
+    let filteredLibraries = libraries.filter(lib => lib.name.toLowerCase().includes(query));
+    let libraryList = document.getElementById("libraryList");
+    libraryList.innerHTML = "";
+
+    if (filteredLibraries.length === 0) {
+        libraryList.innerHTML = "<p>No libraries found.</p>";
+    } else {
+        filteredLibraries.forEach(lib => {
+            let div = document.createElement("div");
+            div.classList.add("library-item");
+            div.innerHTML = `<h3>${lib.name}</h3>
+                             <p>Location: ${lib.location}</p>
+                             <button onclick="getDirections(${lib.lat}, ${lib.lng})">Get Directions</button>`;
+            libraryList.appendChild(div);
+        });
+    }
+}
+
+// Get Directions Function
+function getDirections(lat, lng) {
+    window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
+}
+
+// Open and Close Login Modal
+function openLoginModal() {
+    document.getElementById("loginModal").style.display = "block";
+}
+
+function closeLoginModal() {
+    document.getElementById("loginModal").style.display = "none";
+}
+
+// Open and Close Admin Login Modal
+function openAdminLoginModal() {
+    document.getElementById("loginModal").style.display = "block";
+}
+
+function loginUser() {
+    let phoneNumber = document.getElementById("phoneNumber").value;
+    let email = document.getElementById("email").value;
+
+    if (phoneNumber && email) {
+        alert("Login successful!");
+        closeLoginModal();
+    } else {
+        alert("Please enter both Mobile Number and Email.");
+    }
+}
+
+// Forgot Password Functionality
+function forgotPassword() {
+    document.getElementById("forgotPasswordModal").style.display = "block";
+}
+
+function closeForgotPasswordModal() {
+    document.getElementById("forgotPasswordModal").style.display = "none";
+}
+
+function resetPassword() {
+    let phone = document.getElementById("resetPhoneNumber").value;
+    let email = document.getElementById("resetEmail").value;
+
+    if (phone && email) {
+        alert("Password reset link sent to your email!");
+        closeForgotPasswordModal();
+    } else {
+        alert("Please enter registered Mobile Number and Email.");
+    }
+}
