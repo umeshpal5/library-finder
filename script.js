@@ -1,543 +1,293 @@
-// Sample Data
-const libraries = [
-    {
-        id: 1,
-        name: "Sharma Study Point",
-        location: "Vaishali Nagar, Jaipur",
-        contact: "9876543210",
-        fees: "₹800/month",
-        timings: "7AM-10PM",
-        facilities: "AC, WiFi, Silent Zone",
-        coordinates: [26.9124, 75.7873], // [lat, lng] for Leaflet
-        adminUsername: "sharma_lib",
-        adminPassword: "sharma123",
-        isActive: true,
-        lastPayment: "2023-11-15"
+// Database Structure
+let database = {
+    superadmin: {
+        username: "superadmin",
+        password: "admin123" // Change this in production
     },
-    {
-        id: 2,
-        name: "Agarwal Library",
-        location: "Raja Park, Jaipur",
-        contact: "9876543211",
-        fees: "₹1000/month",
-        timings: "6AM-11PM",
-        facilities: "WiFi, CCTV, Coffee",
-        coordinates: [26.8995, 75.7963],
-        adminUsername: "agarwal_lib",
-        adminPassword: "agarwal123",
-        isActive: true,
-        lastPayment: "2023-11-10"
-    }
-];
+    libraries: [
+        // Sample library (you'll add more manually)
+        {
+            id: "lib001",
+            adminUsername: "lib001_user",
+            adminPassword: "lib001_pass",
+            isActive: true,
+            isSetupComplete: false,
+            libraryInfo: null,
+            students: []
+        }
+    ]
+};
 
-let students = [
-    { id: 1, name: "Rahul Sharma", libraryId: 1, joinDate: "2023-10-15", feeDueDate: "2023-12-15" },
-    { id: 2, name: "Priya Singh", libraryId: 1, joinDate: "2023-11-01", feeDueDate: "2023-12-01" },
-    { id: 3, name: "Amit Patel", libraryId: 2, joinDate: "2023-10-20", feeDueDate: "2023-12-20" }
-];
-
-// App State
+// Current User
 let currentUser = null;
-let map;
-let markers = [];
+let currentView = "all"; // all, active, blocked, incomplete
 
-// Initialize Leaflet Map
-function initMap() {
-    // Default to Jaipur coordinates
-    map = L.map('map').setView([26.9124, 75.7873], 13);
-    
-    // Use OpenStreetMap tiles (free)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-    
-    // Add markers for all active libraries
-    updateLibraryMarkers();
+// DOM Elements
+const loginScreen = document.getElementById('login-screen');
+const dashboard = document.getElementById('dashboard');
+const librariesContainer = document.getElementById('libraries-container');
+
+// Initialize App
+function initApp() {
+    checkLoginStatus();
+    renderLibraries();
 }
 
-// Update library markers on map
-function updateLibraryMarkers() {
-    // Clear existing markers
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-    
-    // Custom icon
-    const libraryIcon = L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/447/447031.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
-    
-    // Add new markers for active libraries
-    libraries.filter(lib => lib.isActive).forEach(library => {
-        const marker = L.marker(library.coordinates, { icon: libraryIcon })
-            .addTo(map)
-            .bindPopup(`
-                <div class="map-popup">
-                    <h3>${library.name}</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> ${library.location}</p>
-                    <p><i class="fas fa-phone"></i> ${library.contact}</p>
-                    <p><i class="fas fa-rupee-sign"></i> ${library.fees}</p>
-                    <p><i class="fas fa-clock"></i> ${library.timings}</p>
-                    <p><i class="fas fa-star"></i> ${library.facilities}</p>
-                </div>
-            `, { maxWidth: 250 });
-        
-        markers.push(marker);
-    });
+// Check Login Status
+function checkLoginStatus() {
+    // In a real app, you would check session storage/cookies
+    showLoginScreen();
 }
 
-// Show login screen
-function showLogin(type) {
-    document.getElementById('map-screen').classList.add('hidden');
-    document.getElementById(`${type}-login`).classList.remove('hidden');
+// Show Login Screen
+function showLoginScreen() {
+    loginScreen.classList.remove('hidden');
+    dashboard.classList.add('hidden');
 }
 
-// Hide login screen
-function hideLogin() {
-    document.getElementById('superadmin-login').classList.add('hidden');
-    document.getElementById('admin-login').classList.add('hidden');
-    document.getElementById('map-screen').classList.remove('hidden');
-}
-
-// Super Admin Login
-function loginSuperAdmin() {
+// Login Function
+function login() {
+    const username = document.getElementById('superadmin-username').value;
     const password = document.getElementById('superadmin-password').value;
     
-    // Hardcoded super admin password (change this in production)
-    if (password === "admin123") {
-        currentUser = { type: "superadmin" };
-        hideLogin();
-        showSuperAdminPanel();
+    if (username === database.superadmin.username && 
+        password === database.superadmin.password) {
+        currentUser = { username, role: "superadmin" };
+        showDashboard();
     } else {
-        alert("Invalid super admin password");
+        alert("Invalid credentials. Try 'admin123' as password.");
     }
 }
 
-// Library Admin Login
-function loginLibraryAdmin() {
-    const username = document.getElementById('admin-username').value;
-    const password = document.getElementById('admin-password').value;
+// Show Dashboard
+function showDashboard() {
+    loginScreen.classList.add('hidden');
+    dashboard.classList.remove('hidden');
+    renderLibraries();
+}
+
+// Logout Function
+function logout() {
+    currentUser = null;
+    showLoginScreen();
+}
+
+// Render Libraries
+function renderLibraries(filter = "all") {
+    librariesContainer.innerHTML = '';
+    currentView = filter;
     
-    const library = libraries.find(lib => 
-        lib.adminUsername === username && 
-        lib.adminPassword === password
-    );
+    let librariesToShow = database.libraries;
     
-    if (library) {
+    // Apply filter
+    switch(filter) {
+        case "active":
+            librariesToShow = database.libraries.filter(lib => lib.isActive && lib.isSetupComplete);
+            break;
+        case "blocked":
+            librariesToShow = database.libraries.filter(lib => !lib.isActive);
+            break;
+        case "incomplete":
+            librariesToShow = database.libraries.filter(lib => !lib.isSetupComplete);
+            break;
+    }
+    
+    // Render each library
+    librariesToShow.forEach(library => {
+        const libraryCard = document.createElement('div');
+        libraryCard.className = 'library-card';
+        
+        // Determine status
+        let statusClass, statusText;
         if (!library.isActive) {
-            alert("Your library account is currently blocked. Please contact super admin.");
-            return;
+            statusClass = "status-blocked";
+            statusText = "Blocked";
+        } else if (!library.isSetupComplete) {
+            statusClass = "status-incomplete";
+            statusText = "Incomplete";
+        } else {
+            statusClass = "status-active";
+            statusText = "Active";
         }
         
-        currentUser = { type: "admin", libraryId: library.id };
-        hideLogin();
-        showAdminPanel(library.id);
-    } else {
-        alert("Invalid credentials");
-    }
-}
-
-// Show Super Admin Panel
-function showSuperAdminPanel() {
-    document.getElementById('map-screen').classList.add('hidden');
-    document.getElementById('superadmin-panel').classList.remove('hidden');
-    
-    // Load libraries list
-    const librariesList = document.getElementById('libraries-list');
-    librariesList.innerHTML = '';
-    
-    libraries.forEach(library => {
-        const card = document.createElement('div');
-        card.className = 'library-card';
-        card.innerHTML = `
-            <h3>${library.name}</h3>
-            <p><i class="fas fa-map-marker-alt"></i> ${library.location}</p>
-            <p><i class="fas fa-phone"></i> ${library.contact}</p>
-            <p><i class="fas fa-calendar-check"></i> Last Payment: ${library.lastPayment}</p>
-            <span class="status ${library.isActive ? 'active' : 'inactive'}">
-                ${library.isActive ? 'Active' : 'Blocked'}
-            </span>
-            <div class="action-buttons">
-                <button class="action-btn btn-edit" onclick="editLibrary(${library.id})">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="action-btn btn-block" onclick="toggleLibraryStatus(${library.id})">
-                    ${library.isActive ? '<i class="fas fa-ban"></i> Block' : '<i class="fas fa-check"></i> Unblock'}
-                </button>
+        libraryCard.innerHTML = `
+            <div class="library-card-header">
+                <div class="library-name">
+                    <i class="fas fa-library"></i>
+                    ${library.id}
+                </div>
+                <div class="library-status ${statusClass}">${statusText}</div>
+            </div>
+            <div class="library-card-body">
+                <div class="library-info">
+                    <div class="info-item">
+                        <span class="info-label">Admin User:</span>
+                        <span class="info-value">${library.adminUsername}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value">${statusText}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Students:</span>
+                        <span class="info-value">${library.students.length}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Updated:</span>
+                        <span class="info-value">Today</span>
+                    </div>
+                </div>
+                <div class="library-actions">
+                    <button onclick="viewLibraryDetails('${library.id}')" class="action-btn btn-view">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <button onclick="editLibrary('${library.id}')" class="action-btn btn-edit">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </div>
             </div>
         `;
-        librariesList.appendChild(card);
+        
+        librariesContainer.appendChild(libraryCard);
     });
 }
 
-// Edit Library
-function editLibrary(libraryId) {
-    const library = libraries.find(lib => lib.id === libraryId);
+// Filter Libraries
+function filterLibraries(filter) {
+    // Update active filter button
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === filter) {
+            btn.classList.add('active');
+        }
+    });
     
-    const librariesList = document.getElementById('libraries-list');
-    librariesList.innerHTML = `
-        <div class="library-card">
-            <h3>Edit Library</h3>
-            <div class="form-group">
-                <label>Library Name</label>
-                <input type="text" id="edit-name" value="${library.name}">
-            </div>
-            <div class="form-group">
-                <label>Location</label>
-                <input type="text" id="edit-location" value="${library.location}">
-            </div>
-            <div class="form-group">
-                <label>Contact</label>
-                <input type="text" id="edit-contact" value="${library.contact}">
-            </div>
-            <div class="form-group">
-                <label>Fees</label>
-                <input type="text" id="edit-fees" value="${library.fees}">
-            </div>
-            <div class="form-group">
-                <label>Timings</label>
-                <input type="text" id="edit-timings" value="${library.timings}">
-            </div>
-            <div class="form-group">
-                <label>Facilities</label>
-                <textarea id="edit-facilities">${library.facilities}</textarea>
-            </div>
-            <div class="form-actions">
-                <button class="btn-save" onclick="saveLibraryChanges(${libraryId})">
-                    <i class="fas fa-save"></i> Save Changes
-                </button>
-                <button class="btn-cancel" onclick="showSuperAdminPanel()">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-            </div>
-        </div>
-    `;
+    renderLibraries(filter);
 }
 
-// Save Library Changes
-function saveLibraryChanges(libraryId) {
-    const library = libraries.find(lib => lib.id === libraryId);
+// View Library Details
+function viewLibraryDetails(libId) {
+    const library = database.libraries.find(lib => lib.id === libId);
+    if (!library) return;
     
-    library.name = document.getElementById('edit-name').value;
-    library.location = document.getElementById('edit-location').value;
-    library.contact = document.getElementById('edit-contact').value;
-    library.fees = document.getElementById('edit-fees').value;
-    library.timings = document.getElementById('edit-timings').value;
-    library.facilities = document.getElementById('edit-facilities').value;
+    // Update modal content
+    document.getElementById('lib-modal-title').innerHTML = `
+        <i class="fas fa-library"></i> ${libId} Details
+    `;
     
-    alert("Library updated successfully!");
-    showSuperAdminPanel();
-    updateLibraryMarkers();
+    document.getElementById('lib-status').textContent = library.isActive ? "Active" : "Blocked";
+    document.getElementById('lib-status').className = `status-badge ${library.isActive ? "active" : "blocked"}`;
+    
+    document.getElementById('lib-username').textContent = library.adminUsername;
+    document.getElementById('lib-password').textContent = "•••••••";
+    
+    document.getElementById('status-toggle-btn').innerHTML = `
+        <i class="fas fa-${library.isActive ? "ban" : "check"}"></i> ${library.isActive ? "Block" : "Unblock"}
+    `;
+    document.getElementById('status-toggle-btn').className = `status-btn ${library.isActive ? "block" : "unblock"}`;
+    
+    document.getElementById('total-students').textContent = library.students.length;
+    document.getElementById('active-students').textContent = library.students.filter(s => {
+        // In real app, check fee due date
+        return true;
+    }).length;
+    
+    document.getElementById('fee-due').textContent = library.students.filter(s => {
+        // In real app, check if fee is due
+        return false;
+    }).length;
+    
+    // Show modal
+    document.getElementById('library-details-modal').classList.remove('hidden');
 }
 
 // Toggle Library Status
-function toggleLibraryStatus(libraryId) {
-    const library = libraries.find(lib => lib.id === libraryId);
-    library.isActive = !library.isActive;
+function toggleLibraryStatus() {
+    const libId = document.getElementById('lib-modal-title').textContent.split(" ")[0];
+    const library = database.libraries.find(lib => lib.id === libId);
     
-    if (library.isActive) {
-        library.lastPayment = new Date().toISOString().split('T')[0];
-    }
-    
-    showSuperAdminPanel();
-    updateLibraryMarkers();
-}
-
-// Show Admin Panel
-function showAdminPanel(libraryId) {
-    const library = libraries.find(lib => lib.id === libraryId);
-    
-    document.getElementById('map-screen').classList.add('hidden');
-    document.getElementById('admin-panel').classList.remove('hidden');
-    document.getElementById('admin-library-name').textContent = library.name;
-    
-    // Load library info tab
-    loadLibraryInfoTab(libraryId);
-}
-
-// Load Library Info Tab
-function loadLibraryInfoTab(libraryId) {
-    const library = libraries.find(lib => lib.id === libraryId);
-    const tab = document.getElementById('admin-info-tab');
-    
-    tab.innerHTML = `
-        <div class="form-group">
-            <label>Library Name</label>
-            <input type="text" id="edit-lib-name" value="${library.name}">
-        </div>
-        <div class="form-group">
-            <label>Location</label>
-            <input type="text" id="edit-lib-location" value="${library.location}">
-        </div>
-        <div class="form-group">
-            <label>Contact Number</label>
-            <input type="text" id="edit-lib-contact" value="${library.contact}">
-        </div>
-        <div class="form-group">
-            <label>Fees Structure</label>
-            <input type="text" id="edit-lib-fees" value="${library.fees}">
-        </div>
-        <div class="form-group">
-            <label>Timings</label>
-            <input type="text" id="edit-lib-timings" value="${library.timings}">
-        </div>
-        <div class="form-group">
-            <label>Facilities</label>
-            <textarea id="edit-lib-facilities">${library.facilities}</textarea>
-        </div>
-        <div class="form-actions">
-            <button class="btn-save" onclick="saveLibraryInfo(${libraryId})">
-                <i class="fas fa-save"></i> Save Changes
-            </button>
-        </div>
-    `;
-}
-
-// Save Library Info
-function saveLibraryInfo(libraryId) {
-    const library = libraries.find(lib => lib.id === libraryId);
-    
-    library.name = document.getElementById('edit-lib-name').value;
-    library.location = document.getElementById('edit-lib-location').value;
-    library.contact = document.getElementById('edit-lib-contact').value;
-    library.fees = document.getElementById('edit-lib-fees').value;
-    library.timings = document.getElementById('edit-lib-timings').value;
-    library.facilities = document.getElementById('edit-lib-facilities').value;
-    
-    alert("Library information updated successfully!");
-    updateLibraryMarkers();
-}
-
-// Show Admin Tab
-function showAdminTab(tabId) {
-    document.getElementById('admin-info-tab').classList.remove('active');
-    document.getElementById('admin-students-tab').classList.remove('active');
-    document.getElementById(`admin-${tabId}-tab`).classList.add('active');
-    
-    // Update tab buttons
-    const buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    // Load students tab if selected
-    if (tabId === 'students') {
-        loadStudentsTab(currentUser.libraryId);
+    if (library) {
+        library.isActive = !library.isActive;
+        renderLibraries(currentView);
+        viewLibraryDetails(libId); // Refresh modal
     }
 }
 
-// Load Students Tab
-function loadStudentsTab(libraryId) {
-    const tab = document.getElementById('admin-students-tab');
-    const libraryStudents = students.filter(student => student.libraryId === libraryId);
-    
-    let html = `
-        <h3>Student Management</h3>
-        <button class="btn-add" onclick="showAddStudentForm()">
-            <i class="fas fa-plus"></i> Add New Student
-        </button>
-        <div class="student-list">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Join Date</th>
-                        <th>Fee Due Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-    
-    libraryStudents.forEach(student => {
-        html += `
-            <tr>
-                <td>${student.name}</td>
-                <td>${student.joinDate}</td>
-                <td>${student.feeDueDate}</td>
-                <td>
-                    <button class="action-btn btn-edit" onclick="editStudent(${student.id})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="action-btn btn-block" onclick="removeStudent(${student.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
+// Show Add Library Modal
+function showAddLibraryModal() {
+    document.getElementById('add-library-modal').classList.remove('hidden');
+}
+
+// Close Modal
+function closeModal() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.classList.add('hidden');
     });
-    
-    html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    tab.innerHTML = html;
 }
 
-// Show Add Student Form
-function showAddStudentForm() {
-    const tab = document.getElementById('admin-students-tab');
-    
-    tab.innerHTML = `
-        <h3>Add New Student</h3>
-        <div class="form-group">
-            <label>Student Name</label>
-            <input type="text" id="new-student-name" placeholder="Enter student name">
-        </div>
-        <div class="form-group">
-            <label>Join Date</label>
-            <input type="date" id="new-student-join-date">
-        </div>
-        <div class="form-group">
-            <label>Fee Due Date</label>
-            <input type="date" id="new-student-fee-date">
-        </div>
-        <div class="form-actions">
-            <button class="btn-save" onclick="addNewStudent()">
-                <i class="fas fa-save"></i> Save Student
-            </button>
-            <button class="btn-cancel" onclick="showAdminTab('students')">
-                <i class="fas fa-times"></i> Cancel
-            </button>
-        </div>
-    `;
-    
-    // Set default dates
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('new-student-join-date').value = today;
-    
-    const nextMonth = new Date();
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
-    document.getElementById('new-student-fee-date').value = nextMonth.toISOString().split('T')[0];
-}
-
-// Add New Student
-function addNewStudent() {
-    const name = document.getElementById('new-student-name').value;
-    const joinDate = document.getElementById('new-student-join-date').value;
-    const feeDate = document.getElementById('new-student-fee-date').value;
-    
-    if (!name) {
-        alert("Please enter student name");
-        return;
-    }
-    
-    const newId = students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1;
-    
-    students.push({
-        id: newId,
-        name: name,
-        libraryId: currentUser.libraryId,
-        joinDate: joinDate,
-        feeDueDate: feeDate
-    });
-    
-    alert("Student added successfully!");
-    showAdminTab('students');
-}
-
-// Edit Student
-function editStudent(studentId) {
-    const student = students.find(s => s.id === studentId);
-    const tab = document.getElementById('admin-students-tab');
-    
-    tab.innerHTML = `
-        <h3>Edit Student</h3>
-        <div class="form-group">
-            <label>Student Name</label>
-            <input type="text" id="edit-student-name" value="${student.name}">
-        </div>
-        <div class="form-group">
-            <label>Join Date</label>
-            <input type="date" id="edit-student-join-date" value="${student.joinDate}">
-        </div>
-        <div class="form-group">
-            <label>Fee Due Date</label>
-            <input type="date" id="edit-student-fee-date" value="${student.feeDueDate}">
-        </div>
-        <div class="form-actions">
-            <button class="btn-save" onclick="saveStudentChanges(${studentId})">
-                <i class="fas fa-save"></i> Save Changes
-            </button>
-            <button class="btn-cancel" onclick="showAdminTab('students')">
-                <i class="fas fa-times"></i> Cancel
-            </button>
-        </div>
-    `;
-}
-
-// Save Student Changes
-function saveStudentChanges(studentId) {
-    const student = students.find(s => s.id === studentId);
-    
-    student.name = document.getElementById('edit-student-name').value;
-    student.joinDate = document.getElementById('edit-student-join-date').value;
-    student.feeDueDate = document.getElementById('edit-student-fee-date').value;
-    
-    alert("Student updated successfully!");
-    showAdminTab('students');
-}
-
-// Remove Student
-function removeStudent(studentId) {
-    if (confirm("Are you sure you want to remove this student?")) {
-        students = students.filter(s => s.id !== studentId);
-        showAdminTab('students');
-    }
-}
-
-// Add New Library (Super Admin)
+// Add New Library
 function addNewLibrary() {
-    const newId = libraries.length > 0 ? Math.max(...libraries.map(lib => lib.id)) + 1 : 1;
+    const name = document.getElementById('new-lib-name').value;
+    const username = document.getElementById('new-lib-username').value;
+    const password = document.getElementById('new-lib-password').value;
     
-    const newLibrary = {
-        id: newId,
-        name: "New Library",
-        location: "Jaipur",
-        contact: "",
-        fees: "₹0/month",
-        timings: "8AM-8PM",
-        facilities: "",
-        coordinates: [26.9124, 75.7873],
-        adminUsername: `library${newId}`,
-        adminPassword: `pass${newId}`,
-        isActive: true,
-        lastPayment: new Date().toISOString().split('T')[0]
-    };
-    
-    libraries.push(newLibrary);
-    showSuperAdminPanel();
-    updateLibraryMarkers();
-}
-
-// Search Libraries
-function searchLibraries() {
-    const searchTerm = document.getElementById('search-box').value.toLowerCase();
-    
-    if (!searchTerm) {
-        markers.forEach(marker => marker.setOpacity(1));
+    if (!name || !username || !password) {
+        alert("Please fill all fields");
         return;
     }
     
-    markers.forEach(marker => {
-        const libName = marker.getPopup().getContent().toLowerCase();
-        if (libName.includes(searchTerm)) {
-            marker.setOpacity(1);
-            map.setView(marker.getLatLng(), 15);
-            marker.openPopup();
-        } else {
-            marker.setOpacity(0.3);
-        }
+    const newId = `lib${(database.libraries.length + 1).toString().padStart(3, '0')}`;
+    
+    database.libraries.push({
+        id: newId,
+        adminUsername: username,
+        adminPassword: password,
+        isActive: true,
+        isSetupComplete: false,
+        libraryInfo: null,
+        students: []
     });
+    
+    closeModal();
+    renderLibraries(currentView);
+    alert(`Library ${newId} created successfully! Credentials: ${username}/${password}`);
 }
 
-// Logout
-function logout() {
-    currentUser = null;
-    document.getElementById('superadmin-panel').classList.add('hidden');
-    document.getElementById('admin-panel').classList.add('hidden');
-    document.getElementById('map-screen').classList.remove('hidden');
+// Show Password
+function showPassword() {
+    const libId = document.getElementById('lib-modal-title').textContent.split(" ")[0];
+    const library = database.libraries.find(lib => lib.id === libId);
+    
+    if (library) {
+        const passwordEl = document.getElementById('lib-password');
+        if (passwordEl.textContent === "•••••••") {
+            passwordEl.textContent = library.adminPassword;
+        } else {
+            passwordEl.textContent = "•••••••";
+        }
+    }
 }
+
+// Edit Library
+function editLibrary(libId) {
+    // In a complete app, this would open an edit form
+    alert(`Edit functionality for ${libId} will be implemented in the full version`);
+}
+
+// Show Library Students
+function showLibraryStudents() {
+    alert("Student management will be implemented in the full version");
+}
+
+// Show Library Setup
+function showLibrarySetup() {
+    alert("Library profile setup will be implemented in the full version");
+}
+
+// Send Credentials
+function sendCredentials() {
+    alert("Credentials sending functionality will be implemented in the full version");
+}
+
+// Initialize the app when loaded
+window.onload = initApp;
