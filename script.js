@@ -1,311 +1,345 @@
-// Sample Data - In real app, this would come from a database
-let libraries = [
+// Sample Data
+const libraries = [
     {
         id: 1,
         name: "Sharma Study Point",
-        location: "Vaishali Nagar",
+        location: "Vaishali Nagar, Jaipur",
         contact: "9876543210",
         fees: "₹800/month",
         timings: "7AM-10PM",
         facilities: "AC, WiFi, Silent Zone",
+        coordinates: { lat: 26.9124, lng: 75.7873 },
         adminUsername: "sharma_lib",
         adminPassword: "sharma123",
-        isActive: true,
-        lastPaymentDate: "2023-11-01"
+        isActive: true
     },
     {
         id: 2,
         name: "Agarwal Library",
-        location: "Raja Park",
+        location: "Raja Park, Jaipur",
         contact: "9876543211",
         fees: "₹1000/month",
         timings: "6AM-11PM",
         facilities: "WiFi, CCTV, Coffee",
+        coordinates: { lat: 26.8995, lng: 75.7963 },
         adminUsername: "agarwal_lib",
         adminPassword: "agarwal123",
-        isActive: true,
-        lastPaymentDate: "2023-11-05"
+        isActive: true
     }
 ];
 
 let students = [
     { id: 1, name: "Rahul Sharma", libraryId: 1, joinDate: "2023-10-15", feeDueDate: "2023-12-15" },
-    { id: 2, name: "Priya Singh", libraryId: 1, joinDate: "2023-11-01", feeDueDate: "2023-12-01" },
-    { id: 3, name: "Amit Patel", libraryId: 2, joinDate: "2023-10-20", feeDueDate: "2023-12-20" }
+    { id: 2, name: "Priya Singh", libraryId: 1, joinDate: "2023-11-01", feeDueDate: "2023-12-01" }
 ];
 
-// Current User
+// App State
 let currentUser = null;
+let map;
+let markers = [];
 
-// DOM Elements
-const loginScreen = document.getElementById('login-screen');
-const studentView = document.getElementById('student-view');
-const adminView = document.getElementById('admin-view');
-const superadminView = document.getElementById('superadmin-view');
+// Initialize Map when page loads
+window.onload = function() {
+    initMap();
+};
 
-// Login Function
-function login() {
-    const userType = document.getElementById('user-type').value;
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    // Reset
-    loginScreen.classList.add('hidden');
-    studentView.classList.add('hidden');
-    adminView.classList.add('hidden');
-    superadminView.classList.add('hidden');
-
-    if (userType === 'student') {
-        currentUser = { type: 'student' };
-        studentView.classList.remove('hidden');
-        loadStudentView();
-    } 
-    else if (userType === 'admin') {
-        const library = libraries.find(lib => 
-            lib.adminUsername === username && lib.adminPassword === password && lib.isActive
-        );
+// Initialize Google Map
+function initMap() {
+    // Default to Jaipur coordinates
+    const jaipur = { lat: 26.9124, lng: 75.7873 };
+    
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: jaipur,
+        zoom: 12
+    });
+    
+    // Add markers for all active libraries
+    updateLibraryMarkers();
+    
+    // Add search box functionality
+    const searchBox = new google.maps.places.SearchBox(document.getElementById("search-box"));
+    
+    map.addListener("bounds_changed", () => {
+        searchBox.setBounds(map.getBounds());
+    });
+    
+    searchBox.addListener("places_changed", () => {
+        const places = searchBox.getPlaces();
+        if (places.length === 0) return;
         
-        if (library) {
-            currentUser = { type: 'admin', libraryId: library.id };
-            adminView.classList.remove('hidden');
-            loadAdminView(library.id);
-        } else {
-            alert("Invalid credentials or account blocked");
-            loginScreen.classList.remove('hidden');
-        }
-    } 
-    else if (userType === 'superadmin') {
-        if (username === "superadmin" && password === "admin123") {
-            currentUser = { type: 'superadmin' };
-            superadminView.classList.remove('hidden');
-            loadSuperAdminView();
-        } else {
-            alert("Invalid super admin credentials");
-            loginScreen.classList.remove('hidden');
-        }
+        const bounds = new google.maps.LatLngBounds();
+        places.forEach(place => {
+            if (!place.geometry) return;
+            bounds.extend(place.geometry.location);
+        });
+        map.fitBounds(bounds);
+    });
+}
+
+// Update library markers on map
+function updateLibraryMarkers() {
+    // Clear existing markers
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    
+    // Add new markers for active libraries
+    libraries.filter(lib => lib.isActive).forEach(library => {
+        const marker = new google.maps.Marker({
+            position: library.coordinates,
+            map: map,
+            title: library.name
+        });
+        
+        // Add info window
+        const infoWindow = new google.maps.InfoWindow({
+            content: `
+                <h3>${library.name}</h3>
+                <p><b>Location:</b> ${library.location}</p>
+                <p><b>Contact:</b> ${library.contact}</p>
+                <p><b>Fees:</b> ${library.fees}</p>
+                <p><b>Timings:</b> ${library.timings}</p>
+            `
+        });
+        
+        marker.addListener("click", () => {
+            infoWindow.open(map, marker);
+        });
+        
+        markers.push(marker);
+    });
+}
+
+// Show login screen
+function showLogin(type) {
+    document.getElementById('map-screen').classList.add('hidden');
+    document.getElementById(`${type}-login`).classList.remove('hidden');
+}
+
+// Hide login screen
+function hideLogin() {
+    document.getElementById('superadmin-login').classList.add('hidden');
+    document.getElementById('admin-login').classList.add('hidden');
+    document.getElementById('map-screen').classList.remove('hidden');
+}
+
+// Super Admin Login
+function loginSuperAdmin() {
+    const password = document.getElementById('superadmin-password').value;
+    
+    // Hardcoded super admin password (change this in production)
+    if (password === "admin123") {
+        currentUser = { type: "superadmin" };
+        hideLogin();
+        showSuperAdminPanel();
+    } else {
+        alert("Invalid super admin password");
     }
 }
 
-// Logout Function
-function logout() {
-    currentUser = null;
-    studentView.classList.add('hidden');
-    adminView.classList.add('hidden');
-    superadminView.classList.add('hidden');
-    loginScreen.classList.remove('hidden');
+// Library Admin Login
+function loginLibraryAdmin() {
+    const username = document.getElementById('admin-username').value;
+    const password = document.getElementById('admin-password').value;
     
-    // Clear form fields
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
+    const library = libraries.find(lib => 
+        lib.adminUsername === username && 
+        lib.adminPassword === password &&
+        lib.isActive
+    );
+    
+    if (library) {
+        currentUser = { type: "admin", libraryId: library.id };
+        hideLogin();
+        showAdminPanel(library.id);
+    } else {
+        alert("Invalid credentials or account blocked");
+    }
 }
 
-// Load Student View
-function loadStudentView() {
-    const libraryList = document.getElementById('library-list');
-    libraryList.innerHTML = '';
+// Show Super Admin Panel
+function showSuperAdminPanel() {
+    document.getElementById('map-screen').classList.add('hidden');
+    document.getElementById('superadmin-panel').classList.remove('hidden');
     
-    const activeLibraries = libraries.filter(lib => lib.isActive);
+    // Load libraries list
+    const librariesList = document.getElementById('libraries-list');
+    librariesList.innerHTML = '';
     
-    activeLibraries.forEach(library => {
+    libraries.forEach(library => {
         const card = document.createElement('div');
         card.className = 'library-card';
         card.innerHTML = `
             <h3>${library.name}</h3>
-            <p><strong>Location:</strong> ${library.location}</p>
-            <p><strong>Contact:</strong> ${library.contact}</p>
-            <p><strong>Fees:</strong> ${library.fees}</p>
-            <p><strong>Timings:</strong> ${library.timings}</p>
-            <p><strong>Facilities:</strong> ${library.facilities}</p>
+            <p><b>Location:</b> ${library.location}</p>
+            <p><b>Status:</b> ${library.isActive ? 'Active' : 'Blocked'}</p>
+            <div class="form-actions">
+                <button class="btn ${library.isActive ? 'btn-danger' : 'btn-success'}" 
+                    onclick="toggleLibraryStatus(${library.id})">
+                    ${library.isActive ? 'Block' : 'Unblock'}
+                </button>
+            </div>
         `;
-        libraryList.appendChild(card);
+        librariesList.appendChild(card);
     });
 }
 
-// Search Libraries
-function searchLibraries() {
-    const searchTerm = document.getElementById('search-libraries').value.toLowerCase();
-    const cards = document.querySelectorAll('.library-card');
-    
-    cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-}
-
-// Load Admin View
-function loadAdminView(libraryId) {
+// Show Admin Panel
+function showAdminPanel(libraryId) {
     const library = libraries.find(lib => lib.id === libraryId);
     
-    // Load Library Info Tab
-    const libraryInfoTab = document.getElementById('library-info');
-    libraryInfoTab.innerHTML = `
-        <h3>Edit Library Information</h3>
+    document.getElementById('map-screen').classList.add('hidden');
+    document.getElementById('admin-panel').classList.remove('hidden');
+    document.getElementById('admin-library-name').textContent = library.name + " - Admin Panel";
+    
+    // Load library info tab
+    loadLibraryInfoTab(libraryId);
+}
+
+// Load Library Info Tab
+function loadLibraryInfoTab(libraryId) {
+    const library = libraries.find(lib => lib.id === libraryId);
+    const tab = document.getElementById('admin-info-tab');
+    
+    tab.innerHTML = `
         <div class="form-group">
             <label>Library Name</label>
-            <input type="text" id="lib-name" value="${library.name}">
+            <input type="text" id="edit-lib-name" value="${library.name}">
         </div>
         <div class="form-group">
             <label>Location</label>
-            <input type="text" id="lib-location" value="${library.location}">
+            <input type="text" id="edit-lib-location" value="${library.location}">
         </div>
         <div class="form-group">
-            <label>Contact</label>
-            <input type="text" id="lib-contact" value="${library.contact}">
+            <label>Contact Number</label>
+            <input type="text" id="edit-lib-contact" value="${library.contact}">
         </div>
         <div class="form-group">
-            <label>Fees</label>
-            <input type="text" id="lib-fees" value="${library.fees}">
+            <label>Fees Structure</label>
+            <input type="text" id="edit-lib-fees" value="${library.fees}">
         </div>
         <div class="form-group">
             <label>Timings</label>
-            <input type="text" id="lib-timings" value="${library.timings}">
+            <input type="text" id="edit-lib-timings" value="${library.timings}">
         </div>
         <div class="form-group">
             <label>Facilities</label>
-            <textarea id="lib-facilities">${library.facilities}</textarea>
+            <textarea id="edit-lib-facilities">${library.facilities}</textarea>
         </div>
         <div class="form-actions">
-            <button class="save-btn" onclick="saveLibraryInfo(${libraryId})">Save Changes</button>
+            <button class="btn btn-primary" onclick="saveLibraryInfo(${libraryId})">Save Changes</button>
         </div>
     `;
-    
-    // Load Manage Students Tab
-    const manageStudentsTab = document.getElementById('manage-students');
-    const libraryStudents = students.filter(student => student.libraryId === libraryId);
-    
-    let studentsHTML = `<h3>Student Management</h3>
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Join Date</th>
-                <th>Fee Due Date</th>
-                <th>Actions</th>
-            </tr>`;
-    
-    libraryStudents.forEach(student => {
-        studentsHTML += `
-            <tr>
-                <td>${student.name}</td>
-                <td>${student.joinDate}</td>
-                <td>${student.feeDueDate}</td>
-                <td>
-                    <button class="action-btn edit-btn">Edit</button>
-                    <button class="action-btn delete-btn">Remove</button>
-                </td>
-            </tr>
-        `;
-    });
-    
-    studentsHTML += `</table>`;
-    manageStudentsTab.innerHTML = studentsHTML;
 }
 
 // Save Library Info
 function saveLibraryInfo(libraryId) {
     const library = libraries.find(lib => lib.id === libraryId);
     
-    library.name = document.getElementById('lib-name').value;
-    library.location = document.getElementById('lib-location').value;
-    library.contact = document.getElementById('lib-contact').value;
-    library.fees = document.getElementById('lib-fees').value;
-    library.timings = document.getElementById('lib-timings').value;
-    library.facilities = document.getElementById('lib-facilities').value;
+    library.name = document.getElementById('edit-lib-name').value;
+    library.location = document.getElementById('edit-lib-location').value;
+    library.contact = document.getElementById('edit-lib-contact').value;
+    library.fees = document.getElementById('edit-lib-fees').value;
+    library.timings = document.getElementById('edit-lib-timings').value;
+    library.facilities = document.getElementById('edit-lib-facilities').value;
     
     alert("Library information updated successfully!");
+    updateLibraryMarkers();
 }
 
-// Show Tab
-function showTab(tabId) {
-    document.querySelectorAll('.admin-tab').forEach(tab => {
-        tab.classList.add('hidden');
-    });
-    document.getElementById(tabId).classList.remove('hidden');
+// Toggle Library Status
+function toggleLibraryStatus(libraryId) {
+    const library = libraries.find(lib => lib.id === libraryId);
+    library.isActive = !library.isActive;
+    showSuperAdminPanel();
+    updateLibraryMarkers();
 }
 
-// Load Super Admin View
-function loadSuperAdminView() {
-    // Load Manage Libraries Tab
-    const manageLibrariesTab = document.getElementById('manage-libraries');
+// Show Admin Tab
+function showAdminTab(tabId) {
+    document.getElementById('admin-info-tab').classList.remove('active');
+    document.getElementById('admin-students-tab').classList.remove('active');
+    document.getElementById(`admin-${tabId}-tab`).classList.add('active');
     
-    let librariesHTML = `<h3>All Libraries</h3>
+    // Update tab buttons
+    const buttons = document.querySelectorAll('.admin-tabs button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Load students tab if selected
+    if (tabId === 'students') {
+        loadStudentsTab(currentUser.libraryId);
+    }
+}
+
+// Load Students Tab
+function loadStudentsTab(libraryId) {
+    const tab = document.getElementById('admin-students-tab');
+    const libraryStudents = students.filter(student => student.libraryId === libraryId);
+    
+    let html = `
+        <h3>Student Management</h3>
+        <button class="btn btn-primary" onclick="showAddStudentForm()">Add New Student</button>
         <table>
             <tr>
                 <th>Name</th>
-                <th>Location</th>
-                <th>Contact</th>
-                <th>Status</th>
-                <th>Last Payment</th>
+                <th>Join Date</th>
+                <th>Fee Due Date</th>
                 <th>Actions</th>
-            </tr>`;
+            </tr>
+    `;
     
-    libraries.forEach(library => {
-        librariesHTML += `
+    libraryStudents.forEach(student => {
+        html += `
             <tr>
-                <td>${library.name}</td>
-                <td>${library.location}</td>
-                <td>${library.contact}</td>
-                <td>${library.isActive ? 'Active' : 'Blocked'}</td>
-                <td>${library.lastPaymentDate}</td>
+                <td>${student.name}</td>
+                <td>${student.joinDate}</td>
+                <td>${student.feeDueDate}</td>
                 <td>
-                    <button class="action-btn ${library.isActive ? 'block-btn' : 'edit-btn'}" 
-                        onclick="toggleLibraryStatus(${library.id}, ${!library.isActive})">
-                        ${library.isActive ? 'Block' : 'Unblock'}
-                    </button>
+                    <button class="btn btn-primary">Edit</button>
+                    <button class="btn btn-danger">Remove</button>
                 </td>
             </tr>
         `;
     });
     
-    librariesHTML += `</table>`;
-    manageLibrariesTab.innerHTML = librariesHTML;
-    
-    // Load Payment Tracker Tab
-    const paymentTrackerTab = document.getElementById('payment-tracker');
-    paymentTrackerTab.innerHTML = `
-        <h3>Payment Status</h3>
-        <p>In your offline register, maintain:</p>
-        <ul>
-            <li>Library Name</li>
-            <li>Owner Contact</li>
-            <li>Monthly Fee Amount</li>
-            <li>Last Payment Date</li>
-            <li>Next Due Date</li>
-            <li>Payment Status (Paid/Unpaid)</li>
-        </ul>
-        <p>Call each library owner before due date for payment collection.</p>
-    `;
+    html += `</table>`;
+    tab.innerHTML = html;
 }
 
-// Toggle Library Status
-function toggleLibraryStatus(libraryId, newStatus) {
-    const library = libraries.find(lib => lib.id === libraryId);
-    library.isActive = newStatus;
-    loadSuperAdminView();
-    alert(`Library ${newStatus ? 'unblocked' : 'blocked'} successfully!`);
+// Logout
+function logout() {
+    currentUser = null;
+    document.getElementById('superadmin-panel').classList.add('hidden');
+    document.getElementById('admin-panel').classList.add('hidden');
+    document.getElementById('map-screen').classList.remove('hidden');
 }
 
-// Add New Library (Super Admin)
-function addNewLibrary() {
-    const newId = libraries.length > 0 ? Math.max(...libraries.map(lib => lib.id)) + 1 : 1;
+// Search Libraries
+function searchLibraries() {
+    const searchTerm = document.getElementById('search-box').value.toLowerCase();
     
-    const newLibrary = {
-        id: newId,
-        name: "New Library",
-        location: "",
-        contact: "",
-        fees: "",
-        timings: "",
-        facilities: "",
-        adminUsername: `library${newId}`,
-        adminPassword: `pass${newId}`,
-        isActive: true,
-        lastPaymentDate: new Date().toISOString().split('T')[0]
-    };
+    // Filter and show matching markers
+    libraries.filter(lib => 
+        lib.isActive && 
+        (lib.name.toLowerCase().includes(searchTerm) || 
+         lib.location.toLowerCase().includes(searchTerm))
+    ).forEach(lib => {
+        const marker = markers.find(m => m.getTitle() === lib.name);
+        if (marker) {
+            marker.setVisible(true);
+            // Pan to the first matching library
+            if (libraries[0].name === lib.name) {
+                map.panTo(lib.coordinates);
+            }
+        }
+    });
     
-    libraries.push(newLibrary);
-    loadSuperAdminView();
+    // Hide non-matching markers
+    libraries.filter(lib => 
+        !lib.name.toLowerCase().includes(searchTerm) && 
+        !lib.location.toLowerCase().includes(searchTerm)
+    ).forEach(lib => {
+        const marker = markers.find(m => m.getTitle() === lib.name);
+        if (marker) marker.setVisible(false);
+    });
 }
