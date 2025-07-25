@@ -5,78 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jaipur Study Libraries</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="login-screen" class="screen">
-        <h1>Jaipur Study Libraries</h1>
-        <div class="login-box">
-            <h2>Login</h2>
-            <select id="user-type">
-                <option value="student">Student</option>
-                <option value="admin">Library Admin</option>
-                <option value="superadmin">Super Admin</option>
-            </select>
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="login()">Login</button>
-        </div>
-    </div>
-
-    <!-- Student View -->
-    <div id="student-view" class="screen hidden">
+    <!-- Map View (Default Screen) -->
+    <div id="map-screen" class="screen">
         <header>
-            <h2>Nearby Libraries</h2>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <h1>Jaipur Study Libraries</h1>
+            <div class="auth-buttons">
+                <button onclick="showLogin('superadmin')">Super Admin</button>
+                <button onclick="showLogin('admin')">Library Admin</button>
+            </div>
         </header>
-        <div class="search-box">
-            <input type="text" id="search-libraries" placeholder="Search by area or name">
+        
+        <div class="search-container">
+            <input type="text" id="search-box" placeholder="Search libraries...">
             <button onclick="searchLibraries()">Search</button>
         </div>
-        <div id="library-list" class="library-container"></div>
+        
+        <div id="map"></div>
     </div>
 
-    <!-- Library Admin View -->
-    <div id="admin-view" class="screen hidden">
-        <header>
-            <h2>Library Admin Panel</h2>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </header>
-        <div class="admin-panel">
-            <div class="admin-menu">
-                <button onclick="showTab('library-info')">Library Info</button>
-                <button onclick="showTab('manage-students')">Manage Students</button>
-            </div>
-            <div id="library-info" class="admin-tab">
-                <h3>Edit Library Information</h3>
-                <!-- Form fields will be loaded from JS -->
-            </div>
-            <div id="manage-students" class="admin-tab hidden">
-                <h3>Student Management</h3>
-                <!-- Student list will be loaded from JS -->
-            </div>
+    <!-- Super Admin Login -->
+    <div id="superadmin-login" class="login-screen hidden">
+        <div class="login-box">
+            <h2>Super Admin Login</h2>
+            <input type="password" id="superadmin-password" placeholder="Password">
+            <button onclick="loginSuperAdmin()">Login</button>
+            <button onclick="hideLogin()">Back to Map</button>
         </div>
     </div>
 
-    <!-- Super Admin View -->
-    <div id="superadmin-view" class="screen hidden">
+    <!-- Library Admin Login -->
+    <div id="admin-login" class="login-screen hidden">
+        <div class="login-box">
+            <h2>Library Admin Login</h2>
+            <input type="text" id="admin-username" placeholder="Username">
+            <input type="password" id="admin-password" placeholder="Password">
+            <button onclick="loginLibraryAdmin()">Login</button>
+            <button onclick="hideLogin()">Back to Map</button>
+        </div>
+    </div>
+
+    <!-- Super Admin Panel -->
+    <div id="superadmin-panel" class="screen hidden">
         <header>
-            <h2>Super Admin Panel</h2>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <h2>Super Admin Dashboard</h2>
+            <button onclick="logout()">Logout</button>
         </header>
-        <div class="superadmin-panel">
-            <div class="admin-menu">
-                <button onclick="showTab('manage-libraries')">Manage Libraries</button>
-                <button onclick="showTab('payment-tracker')">Payment Tracker</button>
+        <div class="admin-content">
+            <h3>Manage Libraries</h3>
+            <button onclick="addNewLibrary()">Add New Library</button>
+            <div id="libraries-list"></div>
+        </div>
+    </div>
+
+    <!-- Library Admin Panel -->
+    <div id="admin-panel" class="screen hidden">
+        <header>
+            <h2 id="admin-library-name">Library Admin Panel</h2>
+            <button onclick="logout()">Logout</button>
+        </header>
+        <div class="admin-content">
+            <div class="admin-tabs">
+                <button class="active" onclick="showAdminTab('info')">Library Info</button>
+                <button onclick="showAdminTab('students')">Manage Students</button>
             </div>
-            <div id="manage-libraries" class="admin-tab">
-                <h3>All Libraries</h3>
-                <button onclick="addNewLibrary()">Add New Library</button>
-                <!-- Library list will be loaded from JS -->
+            <div id="admin-info-tab" class="admin-tab">
+                <!-- Library info will load here -->
             </div>
-            <div id="payment-tracker" class="admin-tab hidden">
-                <h3>Payment Status</h3>
-                <!-- Payment records will be loaded from JS -->
+            <div id="admin-students-tab" class="admin-tab hidden">
+                <!-- Student management will load here -->
             </div>
         </div>
     </div>
