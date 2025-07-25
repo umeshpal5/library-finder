@@ -16,7 +16,7 @@
         <div id="library-list-view" class="view active">
             <header>
                 <h1>📚 Library Hub Jaipur</h1>
-                <p>अपने आस-पास की बेस्ट लाइब्रेरी खोजें</p>
+                <p>अपने आस-पास की बेस्ट स्टडी लाइब्रेरी खोजें</p>
                 <div class="login-buttons">
                     <button id="show-super-admin-login-btn">Super Admin Login</button>
                     <button id="show-admin-login-btn">Library Admin Login</button>
@@ -24,7 +24,7 @@
             </header>
             <main>
                 <div class="search-bar">
-                    <input type="text" id="search-input" placeholder="लाइब्रेरी का नाम खोजें...">
+                    <input type="text" id="search-input" placeholder="लाइब्रेरी का नाम या एरिया खोजें...">
                 </div>
                 <div id="library-list-container">
                     </div>
@@ -53,10 +53,10 @@
                     <h2>अपनी लाइब्रेरी सेट करें</h2>
                     <p>पहली बार लॉगिन करने पर, कृपया अपनी लाइब्रेरी की जानकारी भरें।</p>
                     <input type="text" id="setup-library-name" placeholder="लाइब्रेरी का नाम" required>
-                    <input type="text" id="setup-library-timings" placeholder="टाइमिंग (जैसे 8 AM - 10 PM)">
-                    <textarea id="setup-library-facilities" placeholder="सुविधाएं (जैसे AC, Wi-Fi, RO Water)"></textarea>
+                    <input type="text" id="setup-library-timings" placeholder="टाइमिंग (जैसे 24 घंटे या 8 AM - 10 PM)">
+                    <textarea id="setup-library-facilities" placeholder="सुविधाएं (जैसे AC, Wi-Fi, RO Water, Parking)"></textarea>
                     <input type="text" id="setup-library-contact" placeholder="संपर्क नंबर">
-                    <input type="text" id="setup-library-photo" placeholder="फोटो URL (Optional)">
+                    <input type="text" id="setup-library-photo" placeholder="फोटो का URL (Optional)">
                     <button id="save-library-setup-btn">Save Information</button>
                 </div>
 
@@ -75,7 +75,7 @@
 
     <div id="login-modal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-btn">&times;</span>
+            <span class="close-btn">×</span>
             <h2 id="login-title">Login</h2>
             <form id="login-form">
                 <input type="text" id="username" placeholder="Username" required>
@@ -88,7 +88,7 @@
     
     <div id="add-student-modal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-btn">&times;</span>
+            <span class="close-btn">×</span>
             <h2>नया स्टूडेंट जोड़ें</h2>
             <form id="add-student-form">
                 <input type="text" id="student-name" placeholder="स्टूडेंट का नाम" required>
