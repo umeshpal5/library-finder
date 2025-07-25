@@ -3,38 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Libradar - Rajasthan</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <title>Find a Library - Map View</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <header>
+        <div class="top-nav">
+            <div class="app-title">
+                <h1>Find Libraries</h1>
+            </div>
+            <div class="auth-buttons">
+                <a href="super-admin-login.html" class="nav-button">Super Admin</a>
+                <a href="admin-login.html" class="nav-button">Admin Login</a>
+            </div>
+        </div>
+    </header>
 
-    <!-- Navigation Bar -->
-    <nav>
-        <div class="menu-icon" onclick="toggleAdminMenu()">☰</div>
-        <h1>Libradar</h1>
-    </nav>
+    <main class="map-view-main">
+        <div class="search-bar-map">
+            <input type="text" id="searchInput" placeholder="Search library or area...">
+            <button onclick="searchLibrariesOnMap()">Search</button>
+        </div>
+        <div id="map" class="map-container">
+            <img src="jaipur_map_placeholder.png" alt="Map of Jaipur" class="base-map-image">
+            <div id="map-markers-container" class="map-markers-container">
+                </div>
+            <p class="map-note"> (यह एक वास्तविक इंटरेक्टिव नक्शा नहीं है, केवल एक सांकेतिक नक्शा है)</p>
+        </div>
+        <div id="libraries-list-below-map" class="libraries-grid">
+            </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 Library Finder</p>
+    </footer>
 
-    <!-- Admin Menu -->
-    <div id="adminMenu" class="admin-menu">
-        <button onclick="openSuperAdminLogin()">Super Admin Login</button>
-        <button onclick="openAdminLogin()">Admin Login</button>
-    </div>
-
-    <!-- Search Box -->
-    <div class="search-container">
-        <input type="text" id="searchBox" placeholder="Search for libraries...">
-        <button onclick="searchLibrary()">Search</button>
-    </div>
-
-    <!-- Rajasthan Map -->
-    <div id="map"></div>
-
-    <!-- Library List -->
-    <div id="libraryList"></div>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="script.js"></script>
-
 </body>
 </html>
