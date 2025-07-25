@@ -1,293 +1,329 @@
-// Database Structure
-let database = {
-    superadmin: {
-        username: "superadmin",
-        password: "admin123" // Change this in production
-    },
-    libraries: [
-        // Sample library (you'll add more manually)
-        {
-            id: "lib001",
-            adminUsername: "lib001_user",
-            adminPassword: "lib001_pass",
-            isActive: true,
-            isSetupComplete: false,
-            libraryInfo: null,
-            students: []
+document.addEventListener('DOMContentLoaded', () => {
+    // ############### DATA INITIALIZATION ###############
+    // This part simulates a database. In a real app, this data would come from a server.
+
+    const DOM = {
+        views: {
+            libraryList: document.getElementById('library-list-view'),
+            superAdminDashboard: document.getElementById('super-admin-dashboard-view'),
+            adminDashboard: document.getElementById('admin-dashboard-view'),
+        },
+        libraryListContainer: document.getElementById('library-list-container'),
+        searchInput: document.getElementById('search-input'),
+        adminListContainer: document.getElementById('admin-list-container'),
+        studentListContainer: document.getElementById('student-list-container'),
+        modals: {
+            login: document.getElementById('login-modal'),
+            addStudent: document.getElementById('add-student-modal'),
+        },
+        forms: {
+            login: document.getElementById('login-form'),
+            addStudent: document.getElementById('add-student-form'),
+            librarySetup: document.getElementById('library-setup-form'),
+        },
+        buttons: {
+            showSuperAdminLogin: document.getElementById('show-super-admin-login-btn'),
+            showAdminLogin: document.getElementById('show-admin-login-btn'),
+            superAdminLogout: document.getElementById('super-admin-logout-btn'),
+            adminLogout: document.getElementById('admin-logout-btn'),
+            saveLibrarySetup: document.getElementById('save-library-setup-btn'),
+            showAddStudentModal: document.getElementById('show-add-student-modal-btn'),
+        },
+        other: {
+            loginTitle: document.getElementById('login-title'),
+            loginError: document.getElementById('login-error'),
+            adminLibraryName: document.getElementById('admin-library-name'),
+            adminMainContent: document.getElementById('admin-main-content'),
         }
-    ]
-};
-
-// Current User
-let currentUser = null;
-let currentView = "all"; // all, active, blocked, incomplete
-
-// DOM Elements
-const loginScreen = document.getElementById('login-screen');
-const dashboard = document.getElementById('dashboard');
-const librariesContainer = document.getElementById('libraries-container');
-
-// Initialize App
-function initApp() {
-    checkLoginStatus();
-    renderLibraries();
-}
-
-// Check Login Status
-function checkLoginStatus() {
-    // In a real app, you would check session storage/cookies
-    showLoginScreen();
-}
-
-// Show Login Screen
-function showLoginScreen() {
-    loginScreen.classList.remove('hidden');
-    dashboard.classList.add('hidden');
-}
-
-// Login Function
-function login() {
-    const username = document.getElementById('superadmin-username').value;
-    const password = document.getElementById('superadmin-password').value;
+    };
     
-    if (username === database.superadmin.username && 
-        password === database.superadmin.password) {
-        currentUser = { username, role: "superadmin" };
-        showDashboard();
-    } else {
-        alert("Invalid credentials. Try 'admin123' as password.");
-    }
-}
+    let state = {
+        currentUser: null, // { type: 'superadmin' } or { type: 'admin', username: '...' }
+        loginType: null, // 'superadmin' or 'admin'
+        superAdmin: {
+            username: 'superadmin',
+            password: 'superpassword123'
+        },
+        admins: []
+    };
 
-// Show Dashboard
-function showDashboard() {
-    loginScreen.classList.add('hidden');
-    dashboard.classList.remove('hidden');
-    renderLibraries();
-}
-
-// Logout Function
-function logout() {
-    currentUser = null;
-    showLoginScreen();
-}
-
-// Render Libraries
-function renderLibraries(filter = "all") {
-    librariesContainer.innerHTML = '';
-    currentView = filter;
-    
-    let librariesToShow = database.libraries;
-    
-    // Apply filter
-    switch(filter) {
-        case "active":
-            librariesToShow = database.libraries.filter(lib => lib.isActive && lib.isSetupComplete);
-            break;
-        case "blocked":
-            librariesToShow = database.libraries.filter(lib => !lib.isActive);
-            break;
-        case "incomplete":
-            librariesToShow = database.libraries.filter(lib => !lib.isSetupComplete);
-            break;
+    function generateAdminCredentials() {
+        const admins = [];
+        for (let i = 1; i <= 200; i++) {
+            admins.push({
+                username: `libraryadmin${i}`,
+                password: `pass${Math.random().toString(36).substring(2, 8)}`,
+                isBlocked: false,
+                libraryInfo: null, // Will be filled on first login
+                students: []
+            });
+        }
+        return admins;
     }
     
-    // Render each library
-    librariesToShow.forEach(library => {
-        const libraryCard = document.createElement('div');
-        libraryCard.className = 'library-card';
-        
-        // Determine status
-        let statusClass, statusText;
-        if (!library.isActive) {
-            statusClass = "status-blocked";
-            statusText = "Blocked";
-        } else if (!library.isSetupComplete) {
-            statusClass = "status-incomplete";
-            statusText = "Incomplete";
+    // ############### LOCAL STORAGE (DATABASE SIMULATION) ###############
+
+    function saveData() {
+        localStorage.setItem('libraryHubData', JSON.stringify(state.admins));
+    }
+
+    function loadData() {
+        const data = localStorage.getItem('libraryHubData');
+        if (data) {
+            state.admins = JSON.parse(data);
         } else {
-            statusClass = "status-active";
-            statusText = "Active";
+            // First time load: generate admins and save
+            state.admins = generateAdminCredentials();
+            saveData();
         }
-        
-        libraryCard.innerHTML = `
-            <div class="library-card-header">
-                <div class="library-name">
-                    <i class="fas fa-library"></i>
-                    ${library.id}
-                </div>
-                <div class="library-status ${statusClass}">${statusText}</div>
-            </div>
-            <div class="library-card-body">
-                <div class="library-info">
-                    <div class="info-item">
-                        <span class="info-label">Admin User:</span>
-                        <span class="info-value">${library.adminUsername}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Status:</span>
-                        <span class="info-value">${statusText}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Students:</span>
-                        <span class="info-value">${library.students.length}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Last Updated:</span>
-                        <span class="info-value">Today</span>
-                    </div>
-                </div>
-                <div class="library-actions">
-                    <button onclick="viewLibraryDetails('${library.id}')" class="action-btn btn-view">
-                        <i class="fas fa-eye"></i> View
-                    </button>
-                    <button onclick="editLibrary('${library.id}')" class="action-btn btn-edit">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        librariesContainer.appendChild(libraryCard);
-    });
-}
+    }
 
-// Filter Libraries
-function filterLibraries(filter) {
-    // Update active filter button
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.filter === filter) {
-            btn.classList.add('active');
+    // ############### UI RENDERING FUNCTIONS ###############
+
+    function switchView(viewId) {
+        Object.values(DOM.views).forEach(view => view.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+    }
+
+    function renderLibraryList() {
+        DOM.libraryListContainer.innerHTML = '';
+        const searchTerm = DOM.searchInput.value.toLowerCase();
+        
+        const activeLibraries = state.admins.filter(admin => admin.libraryInfo && !admin.isBlocked);
+
+        if (activeLibraries.length === 0) {
+            DOM.libraryListContainer.innerHTML = '<p>अभी कोई लाइब्रेरी उपलब्ध नहीं है।</p>';
+            return;
         }
-    });
-    
-    renderLibraries(filter);
-}
 
-// View Library Details
-function viewLibraryDetails(libId) {
-    const library = database.libraries.find(lib => lib.id === libId);
-    if (!library) return;
-    
-    // Update modal content
-    document.getElementById('lib-modal-title').innerHTML = `
-        <i class="fas fa-library"></i> ${libId} Details
-    `;
-    
-    document.getElementById('lib-status').textContent = library.isActive ? "Active" : "Blocked";
-    document.getElementById('lib-status').className = `status-badge ${library.isActive ? "active" : "blocked"}`;
-    
-    document.getElementById('lib-username').textContent = library.adminUsername;
-    document.getElementById('lib-password').textContent = "•••••••";
-    
-    document.getElementById('status-toggle-btn').innerHTML = `
-        <i class="fas fa-${library.isActive ? "ban" : "check"}"></i> ${library.isActive ? "Block" : "Unblock"}
-    `;
-    document.getElementById('status-toggle-btn').className = `status-btn ${library.isActive ? "block" : "unblock"}`;
-    
-    document.getElementById('total-students').textContent = library.students.length;
-    document.getElementById('active-students').textContent = library.students.filter(s => {
-        // In real app, check fee due date
-        return true;
-    }).length;
-    
-    document.getElementById('fee-due').textContent = library.students.filter(s => {
-        // In real app, check if fee is due
-        return false;
-    }).length;
-    
-    // Show modal
-    document.getElementById('library-details-modal').classList.remove('hidden');
-}
-
-// Toggle Library Status
-function toggleLibraryStatus() {
-    const libId = document.getElementById('lib-modal-title').textContent.split(" ")[0];
-    const library = database.libraries.find(lib => lib.id === libId);
-    
-    if (library) {
-        library.isActive = !library.isActive;
-        renderLibraries(currentView);
-        viewLibraryDetails(libId); // Refresh modal
+        activeLibraries
+            .filter(admin => admin.libraryInfo.name.toLowerCase().includes(searchTerm))
+            .forEach(admin => {
+                const lib = admin.libraryInfo;
+                const card = document.createElement('div');
+                card.className = 'library-card';
+                card.innerHTML = `
+                    <img src="${lib.photo || 'https://via.placeholder.com/400x225.png?text=Library+Image'}" alt="${lib.name}">
+                    <div class="library-card-content">
+                        <h3>${lib.name}</h3>
+                        <p><strong>🕒 समय:</strong> ${lib.timings}</p>
+                        <p><strong>💡 सुविधाएं:</strong> ${lib.facilities}</p>
+                        <p><strong>📞 संपर्क:</strong> ${lib.contact}</p>
+                        <p><strong>📍 दूरी:</strong> ${(Math.random() * 5 + 0.5).toFixed(1)} km दूर</p>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Jaipur+${lib.name}" target="_blank" class="get-directions-btn">Get Directions</a>
+                    </div>
+                `;
+                DOM.libraryListContainer.appendChild(card);
+            });
     }
-}
 
-// Show Add Library Modal
-function showAddLibraryModal() {
-    document.getElementById('add-library-modal').classList.remove('hidden');
-}
-
-// Close Modal
-function closeModal() {
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.classList.add('hidden');
-    });
-}
-
-// Add New Library
-function addNewLibrary() {
-    const name = document.getElementById('new-lib-name').value;
-    const username = document.getElementById('new-lib-username').value;
-    const password = document.getElementById('new-lib-password').value;
-    
-    if (!name || !username || !password) {
-        alert("Please fill all fields");
-        return;
+    function renderSuperAdminDashboard() {
+        DOM.adminListContainer.innerHTML = '';
+        state.admins.forEach(admin => {
+            const adminItem = document.createElement('div');
+            adminItem.className = `admin-item ${admin.isBlocked ? 'blocked' : ''}`;
+            adminItem.innerHTML = `
+                <div class="admin-name">
+                    <strong>${admin.username}</strong>
+                    <span>(${admin.libraryInfo ? admin.libraryInfo.name : 'Not Setup Yet'})</span>
+                </div>
+                <button class="${admin.isBlocked ? 'unblock-btn' : 'block-btn'}" data-username="${admin.username}">
+                    ${admin.isBlocked ? 'Unblock' : 'Block'}
+                </button>
+            `;
+            DOM.adminListContainer.appendChild(adminItem);
+        });
     }
-    
-    const newId = `lib${(database.libraries.length + 1).toString().padStart(3, '0')}`;
-    
-    database.libraries.push({
-        id: newId,
-        adminUsername: username,
-        adminPassword: password,
-        isActive: true,
-        isSetupComplete: false,
-        libraryInfo: null,
-        students: []
-    });
-    
-    closeModal();
-    renderLibraries(currentView);
-    alert(`Library ${newId} created successfully! Credentials: ${username}/${password}`);
-}
 
-// Show Password
-function showPassword() {
-    const libId = document.getElementById('lib-modal-title').textContent.split(" ")[0];
-    const library = database.libraries.find(lib => lib.id === libId);
-    
-    if (library) {
-        const passwordEl = document.getElementById('lib-password');
-        if (passwordEl.textContent === "•••••••") {
-            passwordEl.textContent = library.adminPassword;
+    function renderAdminDashboard() {
+        const admin = state.admins.find(a => a.username === state.currentUser.username);
+        if (!admin) return;
+
+        if (!admin.libraryInfo) {
+            // First time login - show setup form
+            DOM.forms.librarySetup.style.display = 'block';
+            DOM.other.adminMainContent.style.display = 'none';
         } else {
-            passwordEl.textContent = "•••••••";
+            // Regular login
+            DOM.forms.librarySetup.style.display = 'none';
+            DOM.other.adminMainContent.style.display = 'block';
+            DOM.other.adminLibraryName.textContent = `📚 ${admin.libraryInfo.name}`;
+            renderStudentList(admin.students);
         }
     }
-}
+    
+    function renderStudentList(students) {
+        DOM.studentListContainer.innerHTML = '';
+        if (students.length === 0) {
+            DOM.studentListContainer.innerHTML = '<p>अभी कोई स्टूडेंट नहीं है। नया स्टूडेंट जोड़ें।</p>';
+            return;
+        }
 
-// Edit Library
-function editLibrary(libId) {
-    // In a complete app, this would open an edit form
-    alert(`Edit functionality for ${libId} will be implemented in the full version`);
-}
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        students
+            .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+            .forEach(student => {
+                const isDue = student.dueDate <= today;
+                const studentItem = document.createElement('div');
+                studentItem.className = `student-item ${isDue ? 'fee-due' : ''}`;
+                studentItem.innerHTML = `
+                    <div class="student-info">
+                        <div class="student-name"><strong>${student.name}</strong> (${student.shift})</div>
+                        <div class="student-details">
+                            📱 ${student.mobile} | 💰 ₹${student.fee} | 📅 अगली फीस: ${student.dueDate}
+                        </div>
+                    </div>
+                    <div class="student-actions">
+                        ${isDue ? '<span>Fee Due!</span>' : ''}
+                    </div>
+                `;
+                DOM.studentListContainer.appendChild(studentItem);
+            });
+    }
 
-// Show Library Students
-function showLibraryStudents() {
-    alert("Student management will be implemented in the full version");
-}
+    // ############### EVENT HANDLERS ###############
 
-// Show Library Setup
-function showLibrarySetup() {
-    alert("Library profile setup will be implemented in the full version");
-}
+    // Show/Hide Modals
+    function showModal(modal) {
+        modal.style.display = 'flex';
+    }
+    function hideModals() {
+        Object.values(DOM.modals).forEach(modal => modal.style.display = 'none');
+    }
+    document.querySelectorAll('.close-btn').forEach(btn => btn.addEventListener('click', hideModals));
 
-// Send Credentials
-function sendCredentials() {
-    alert("Credentials sending functionality will be implemented in the full version");
-}
+    // Login Buttons
+    DOM.buttons.showSuperAdminLogin.addEventListener('click', () => {
+        state.loginType = 'superadmin';
+        DOM.other.loginTitle.textContent = 'Super Admin Login';
+        DOM.other.loginError.textContent = '';
+        DOM.forms.login.reset();
+        showModal(DOM.modals.login);
+    });
 
-// Initialize the app when loaded
-window.onload = initApp;
+    DOM.buttons.showAdminLogin.addEventListener('click', () => {
+        state.loginType = 'admin';
+        DOM.other.loginTitle.textContent = 'Library Admin Login';
+        DOM.other.loginError.textContent = '';
+        DOM.forms.login.reset();
+        showModal(DOM.modals.login);
+    });
+
+    // Login Form Submission
+    DOM.forms.login.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = DOM.forms.login.username.value;
+        const password = DOM.forms.login.password.value;
+        let loginSuccess = false;
+
+        if (state.loginType === 'superadmin') {
+            if (username === state.superAdmin.username && password === state.superAdmin.password) {
+                state.currentUser = { type: 'superadmin' };
+                switchView('super-admin-dashboard-view');
+                renderSuperAdminDashboard();
+                loginSuccess = true;
+            }
+        } else {
+            const admin = state.admins.find(a => a.username === username && a.password === password);
+            if (admin) {
+                if(admin.isBlocked) {
+                    DOM.other.loginError.textContent = 'Your account is blocked. Please contact Super Admin.';
+                    return;
+                }
+                state.currentUser = { type: 'admin', username: admin.username };
+                switchView('admin-dashboard-view');
+                renderAdminDashboard();
+                loginSuccess = true;
+            }
+        }
+
+        if (loginSuccess) {
+            hideModals();
+        } else {
+            DOM.other.loginError.textContent = 'Invalid username or password.';
+        }
+    });
+    
+    // Logout Buttons
+    DOM.buttons.superAdminLogout.addEventListener('click', () => {
+        state.currentUser = null;
+        switchView('library-list-view');
+    });
+    DOM.buttons.adminLogout.addEventListener('click', () => {
+        state.currentUser = null;
+        switchView('library-list-view');
+    });
+
+    // Super Admin: Block/Unblock
+    DOM.adminListContainer.addEventListener('click', (e) => {
+        if (e.target.matches('.block-btn, .unblock-btn')) {
+            const username = e.target.dataset.username;
+            const admin = state.admins.find(a => a.username === username);
+            if(admin) {
+                admin.isBlocked = !admin.isBlocked;
+                saveData();
+                renderSuperAdminDashboard();
+                renderLibraryList(); // Update public list as well
+            }
+        }
+    });
+
+    // Admin: Save Library Setup
+    DOM.buttons.saveLibrarySetup.addEventListener('click', () => {
+        const admin = state.admins.find(a => a.username === state.currentUser.username);
+        if(!admin) return;
+
+        const libraryInfo = {
+            name: document.getElementById('setup-library-name').value,
+            timings: document.getElementById('setup-library-timings').value,
+            facilities: document.getElementById('setup-library-facilities').value,
+            contact: document.getElementById('setup-library-contact').value,
+            photo: document.getElementById('setup-library-photo').value,
+        };
+        
+        if (!libraryInfo.name || !libraryInfo.timings || !libraryInfo.facilities || !libraryInfo.contact) {
+            alert('Please fill all the required fields.');
+            return;
+        }
+
+        admin.libraryInfo = libraryInfo;
+        saveData();
+        renderAdminDashboard();
+        renderLibraryList(); // Update the public list
+    });
+
+    // Admin: Show Add Student Modal
+    DOM.buttons.showAddStudentModal.addEventListener('click', () => {
+        DOM.forms.addStudent.reset();
+        showModal(DOM.modals.addStudent);
+    });
+
+    // Admin: Add Student Form Submission
+    DOM.forms.addStudent.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const admin = state.admins.find(a => a.username === state.currentUser.username);
+        if(!admin) return;
+
+        const newStudent = {
+            name: document.getElementById('student-name').value,
+            mobile: document.getElementById('student-mobile').value,
+            shift: document.getElementById('student-shift').value,
+            fee: document.getElementById('student-fee').value,
+            submitDate: new Date().toISOString().split('T')[0],
+            dueDate: document.getElementById('fee-due-date').value,
+        };
+
+        admin.students.push(newStudent);
+        saveData();
+        renderStudentList(admin.students);
+        hideModals();
+    });
+
+    // Search functionality
+    DOM.searchInput.addEventListener('input', renderLibraryList);
+
+    // ############### APP INITIALIZATION ###############
+    loadData();
+    renderLibraryList();
+    switchView('library-list-view');
+});
