@@ -3,39 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find a Library - Map View</title>
+    <title>Jaipur Study Libraries</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="top-nav">
-            <div class="app-title">
-                <h1>Find Libraries</h1>
-            </div>
-            <div class="auth-buttons">
-                <a href="super-admin-login.html" class="nav-button">Super Admin</a>
-                <a href="admin-login.html" class="nav-button">Admin Login</a>
-            </div>
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen">
+        <h1>Jaipur Study Libraries</h1>
+        <div class="login-box">
+            <h2>Login</h2>
+            <select id="user-type">
+                <option value="student">Student</option>
+                <option value="admin">Library Admin</option>
+                <option value="superadmin">Super Admin</option>
+            </select>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
         </div>
-    </header>
+    </div>
 
-    <main class="map-view-main">
-        <div class="search-bar-map">
-            <input type="text" id="searchInput" placeholder="Search library or area...">
-            <button onclick="searchLibrariesOnMap()">Search</button>
+    <!-- Student View -->
+    <div id="student-view" class="screen hidden">
+        <header>
+            <h2>Nearby Libraries</h2>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </header>
+        <div class="search-box">
+            <input type="text" id="search-libraries" placeholder="Search by area or name">
+            <button onclick="searchLibraries()">Search</button>
         </div>
-        <div id="map" class="map-container">
-            <img src="jaipur_map_placeholder.png" alt="Map of Jaipur" class="base-map-image">
-            <div id="map-markers-container" class="map-markers-container">
-                </div>
-            <p class="map-note"> (यह एक वास्तविक इंटरेक्टिव नक्शा नहीं है, केवल एक सांकेतिक नक्शा है)</p>
-        </div>
-        <div id="libraries-list-below-map" class="libraries-grid">
+        <div id="library-list" class="library-container"></div>
+    </div>
+
+    <!-- Library Admin View -->
+    <div id="admin-view" class="screen hidden">
+        <header>
+            <h2>Library Admin Panel</h2>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </header>
+        <div class="admin-panel">
+            <div class="admin-menu">
+                <button onclick="showTab('library-info')">Library Info</button>
+                <button onclick="showTab('manage-students')">Manage Students</button>
             </div>
-    </main>
-    <footer>
-        <p>&copy; 2025 Library Finder</p>
-    </footer>
+            <div id="library-info" class="admin-tab">
+                <h3>Edit Library Information</h3>
+                <!-- Form fields will be loaded from JS -->
+            </div>
+            <div id="manage-students" class="admin-tab hidden">
+                <h3>Student Management</h3>
+                <!-- Student list will be loaded from JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Super Admin View -->
+    <div id="superadmin-view" class="screen hidden">
+        <header>
+            <h2>Super Admin Panel</h2>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </header>
+        <div class="superadmin-panel">
+            <div class="admin-menu">
+                <button onclick="showTab('manage-libraries')">Manage Libraries</button>
+                <button onclick="showTab('payment-tracker')">Payment Tracker</button>
+            </div>
+            <div id="manage-libraries" class="admin-tab">
+                <h3>All Libraries</h3>
+                <button onclick="addNewLibrary()">Add New Library</button>
+                <!-- Library list will be loaded from JS -->
+            </div>
+            <div id="payment-tracker" class="admin-tab hidden">
+                <h3>Payment Status</h3>
+                <!-- Payment records will be loaded from JS -->
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
