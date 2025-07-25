@@ -3,80 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jaipur Study Libraries</title>
+    <title>StudyLib - Jaipur Study Libraries</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <!-- Leaflet CSS (Free Map) -->
+    <!-- Leaflet CSS (Free Maps) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Loading animation */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #4a6bff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        .loader-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #ffffff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-    <!-- Map View (Default Screen) -->
-    <div id="map-screen" class="screen">
-        <header>
-            <h1>Jaipur Study Libraries</h1>
-            <div class="auth-buttons">
-                <button onclick="showLogin('superadmin')">Super Admin</button>
-                <button onclick="showLogin('admin')">Library Admin</button>
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <!-- Map View -->
+        <div id="map-screen" class="screen">
+            <header class="app-header">
+                <div class="logo">
+                    <i class="fas fa-book-open"></i>
+                    <h1>StudyLib</h1>
+                </div>
+                <div class="auth-buttons">
+                    <button class="btn-admin" onclick="showLogin('superadmin')">
+                        <i class="fas fa-lock"></i> Super Admin
+                    </button>
+                    <button class="btn-admin" onclick="showLogin('admin')">
+                        <i class="fas fa-user-shield"></i> Library Admin
+                    </button>
+                </div>
+            </header>
+            
+            <div class="search-box">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-box" placeholder="Search libraries...">
+                    <button class="btn-search" onclick="searchLibraries()">Go</button>
+                </div>
             </div>
-        </header>
-        
-        <div class="search-container">
-            <input type="text" id="search-box" placeholder="Search libraries...">
-            <button onclick="searchLibraries()">Search</button>
+            
+            <div id="map"></div>
         </div>
-        
-        <div id="map"></div>
-    </div>
 
-    <!-- Super Admin Login -->
-    <div id="superadmin-login" class="login-screen hidden">
-        <div class="login-box">
-            <h2>Super Admin Login</h2>
-            <input type="password" id="superadmin-password" placeholder="Password">
-            <button onclick="loginSuperAdmin()">Login</button>
-            <button onclick="hideLogin()">Back to Map</button>
-        </div>
-    </div>
-
-    <!-- Library Admin Login -->
-    <div id="admin-login" class="login-screen hidden">
-        <div class="login-box">
-            <h2>Library Admin Login</h2>
-            <input type="text" id="admin-username" placeholder="Username">
-            <input type="password" id="admin-password" placeholder="Password">
-            <button onclick="loginLibraryAdmin()">Login</button>
-            <button onclick="hideLogin()">Back to Map</button>
-        </div>
-    </div>
-
-    <!-- Super Admin Panel -->
-    <div id="superadmin-panel" class="screen hidden">
-        <header>
-            <h2>Super Admin Dashboard</h2>
-            <button onclick="logout()">Logout</button>
-        </header>
-        <div class="admin-content">
-            <h3>Manage Libraries</h3>
-            <button onclick="addNewLibrary()">Add New Library</button>
-            <div id="libraries-list"></div>
-        </div>
-    </div>
-
-    <!-- Library Admin Panel -->
-    <div id="admin-panel" class="screen hidden">
-        <header>
-            <h2 id="admin-library-name">Library Admin Panel</h2>
-            <button onclick="logout()">Logout</button>
-        </header>
-        <div class="admin-content">
-            <div class="admin-tabs">
-                <button class="active" onclick="showAdminTab('info')">Library Info</button>
-                <button onclick="showAdminTab('students')">Manage Students</button>
+        <!-- Login Screens -->
+        <div id="superadmin-login" class="login-screen hidden">
+            <div class="login-card">
+                <div class="login-header">
+                    <i class="fas fa-lock"></i>
+                    <h2>Super Admin Login</h2>
+                </div>
+                <input type="password" id="superadmin-password" placeholder="Enter Password">
+                <button class="btn-login" onclick="loginSuperAdmin()">Login</button>
+                <button class="btn-back" onclick="hideLogin()">
+                    <i class="fas fa-arrow-left"></i> Back to Map
+                </button>
             </div>
-            <div id="admin-info-tab" class="admin-tab">
-                <!-- Library info will load here -->
+        </div>
+
+        <div id="admin-login" class="login-screen hidden">
+            <div class="login-card">
+                <div class="login-header">
+                    <i class="fas fa-user-shield"></i>
+                    <h2>Library Admin Login</h2>
+                </div>
+                <input type="text" id="admin-username" placeholder="Username">
+                <input type="password" id="admin-password" placeholder="Password">
+                <button class="btn-login" onclick="loginLibraryAdmin()">Login</button>
+                <button class="btn-back" onclick="hideLogin()">
+                    <i class="fas fa-arrow-left"></i> Back to Map
+                </button>
             </div>
-            <div id="admin-students-tab" class="admin-tab hidden">
-                <!-- Student management will load here -->
+        </div>
+
+        <!-- Admin Panels -->
+        <div id="superadmin-panel" class="admin-panel hidden">
+            <header class="panel-header">
+                <h2><i class="fas fa-crown"></i> Super Admin Dashboard</h2>
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </header>
+            <div class="panel-content">
+                <div class="action-bar">
+                    <button class="btn-add" onclick="addNewLibrary()">
+                        <i class="fas fa-plus"></i> Add Library
+                    </button>
+                </div>
+                <div id="libraries-list" class="card-grid"></div>
+            </div>
+        </div>
+
+        <div id="admin-panel" class="admin-panel hidden">
+            <header class="panel-header">
+                <h2><i class="fas fa-user-shield"></i> <span id="admin-library-name">Library Admin</span></h2>
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </header>
+            <div class="panel-content">
+                <div class="admin-tabs">
+                    <button class="tab-btn active" onclick="showAdminTab('info')">
+                        <i class="fas fa-info-circle"></i> Library Info
+                    </button>
+                    <button class="tab-btn" onclick="showAdminTab('students')">
+                        <i class="fas fa-users"></i> Manage Students
+                    </button>
+                </div>
+                <div id="admin-info-tab" class="tab-content active">
+                    <!-- Library info will load here -->
+                </div>
+                <div id="admin-students-tab" class="tab-content">
+                    <!-- Student management will load here -->
+                </div>
             </div>
         </div>
     </div>
@@ -84,5 +150,18 @@
     <!-- Leaflet JS (Free Maps) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
+    <script>
+        // Hide loader when page loads
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(function() {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('app').classList.remove('hidden');
+                    initMap(); // Initialize map after loading
+                }, 500);
+            }, 1500);
+        });
+    </script>
 </body>
 </html>
