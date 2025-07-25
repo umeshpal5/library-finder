@@ -47,17 +47,26 @@ document.addEventListener('DOMContentLoaded', () => {
         admins: []
     };
 
+    /**
+     * Generates 200 admin credentials with unique passwords.
+     * This function runs only once when the app is opened for the very first time.
+     */
     function generateAdminCredentials() {
+        console.log("Generating 200 Admin credentials for the first time...");
         const admins = [];
         for (let i = 1; i <= 200; i++) {
+            // Creates a simple random password like 'passa1b2c3'
+            const randomPart = Math.random().toString(36).substring(2, 8);
             admins.push({
                 username: `libraryadmin${i}`,
-                password: `pass${Math.random().toString(36).substring(2, 8)}`,
+                password: `pass${randomPart}`,
                 isBlocked: false,
                 libraryInfo: null, // Will be filled on first login
                 students: []
             });
         }
+        // You can log this to the console to get the full list of generated passwords
+        console.log("To see all generated passwords, type 'JSON.parse(localStorage.getItem(\"libraryHubData\"))' in the console.");
         return admins;
     }
     
@@ -92,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeLibraries = state.admins.filter(admin => admin.libraryInfo && !admin.isBlocked);
 
         if (activeLibraries.length === 0) {
-            DOM.libraryListContainer.innerHTML = '<p>अभी कोई लाइब्रेरी उपलब्ध नहीं है।</p>';
+            DOM.libraryListContainer.innerHTML = '<p>अभी कोई लाइब्रेरी उपलब्ध नहीं है। जल्द ही जोड़ी जाएगी।</p>';
             return;
         }
 
@@ -110,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>💡 सुविधाएं:</strong> ${lib.facilities}</p>
                         <p><strong>📞 संपर्क:</strong> ${lib.contact}</p>
                         <p><strong>📍 दूरी:</strong> ${(Math.random() * 5 + 0.5).toFixed(1)} km दूर</p>
-                        <a href="https://www.google.com/maps/search/?api=1&query=Jaipur+${lib.name}" target="_blank" class="get-directions-btn">Get Directions</a>
+                        <a href="https://maps.google.com/?q=${lib.name}, Jaipur" target="_blank" class="get-directions-btn">Get Directions</a>
                     </div>
                 `;
                 DOM.libraryListContainer.appendChild(card);
@@ -159,18 +168,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const today = new Date();
+        today.setHours(0,0,0,0); // Set to beginning of today for accurate comparison
+
         students
             .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
             .forEach(student => {
-                const isDue = student.dueDate <= today;
+                const dueDate = new Date(student.dueDate);
+                const isDue = dueDate <= today;
                 const studentItem = document.createElement('div');
                 studentItem.className = `student-item ${isDue ? 'fee-due' : ''}`;
                 studentItem.innerHTML = `
                     <div class="student-info">
                         <div class="student-name"><strong>${student.name}</strong> (${student.shift})</div>
                         <div class="student-details">
-                            📱 ${student.mobile} | 💰 ₹${student.fee} | 📅 अगली फीस: ${student.dueDate}
+                            📱 ${student.mobile} | 💰 ₹${student.fee} | 📅 अगली फीस: ${new Date(student.dueDate).toLocaleDateString('en-GB')}
                         </div>
                     </div>
                     <div class="student-actions">
