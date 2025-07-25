@@ -1,259 +1,250 @@
-body {
-    font-family: Arial, sans-serif;
+/* Basic Reset */
+* {
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
     color: #333;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
 }
 
-header {
-    background-color: #4CAF50;
-    color: white;
-    padding: 1rem 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.hidden {
+    display: none !important;
 }
 
-.top-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.screen {
+    padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-.app-title h1 {
-    margin: 0;
-    font-size: 1.8rem;
+/* Login Screen */
+#login-screen {
+    text-align: center;
+    padding-top: 50px;
 }
 
-.auth-buttons .nav-button {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    margin-left: 10px;
-    transition: background-color 0.2s;
+.login-box {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    display: inline-block;
+    margin-top: 20px;
+    text-align: left;
+    width: 350px;
 }
 
-.auth-buttons .nav-button:hover {
-    background-color: #0056b3;
-}
-
-.map-view-main {
-    flex-grow: 1;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 20px auto;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-}
-
-.search-bar-map {
-    display: flex;
-    justify-content: center;
+.login-box h2 {
     margin-bottom: 20px;
+    color: #444;
 }
 
-.search-bar-map input {
-    width: 70%;
+.login-box select, .login-box input {
+    width: 100%;
     padding: 10px;
+    margin-bottom: 15px;
     border: 1px solid #ddd;
-    border-radius: 5px 0 0 5px;
-    font-size: 1rem;
+    border-radius: 5px;
+    font-size: 16px;
 }
 
-.search-bar-map button {
-    padding: 10px 15px;
-    background-color: #007bff;
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
     color: white;
     border: none;
-    border-radius: 0 5px 5px 0;
-    cursor: pointer;
-    font-size: 1rem;
-}
-
-.search-bar-map button:hover {
-    background-color: #0056b3;
-}
-
-.map-container {
-    width: 100%;
-    height: 400px;
-    background-color: #e0e0e0;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    position: relative; /* Essential for positioning markers */
-    overflow: hidden; /* Hide anything overflowing */
-}
-
-.base-map-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Cover the container */
-    display: block;
-}
-
-.map-markers-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.map-marker {
-    position: absolute;
-    width: 30px; /* Marker ka size */
-    height: 30px;
-    background-color: red; /* Marker ka color */
-    border-radius: 50%; /* Gol marker */
-    border: 2px solid white;
-    cursor: pointer;
-    transform: translate(-50%, -100%); /* Marker ko center aur upar shift karega */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    color: white;
-    font-size: 0.8rem;
-}
-
-.map-marker:hover {
-    background-color: darkred;
-}
-
-.map-note {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 5px 10px;
     border-radius: 5px;
-    font-size: 0.8rem;
-    color: #555;
-    white-space: nowrap; /* Prevent text wrapping */
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
 }
 
+.login-box button:hover {
+    background-color: #45a049;
+}
 
-.libraries-grid {
+/* Common Header Styles */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.logout-btn {
+    padding: 8px 15px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Student View */
+.search-box {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.search-box input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.search-box button {
+    padding: 10px 20px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.library-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
 }
 
 .library-card {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
-    cursor: pointer;
-}
-
-.library-card:hover {
-    transform: translateY(-5px);
-}
-
-.library-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-bottom: 1px solid #eee;
-}
-
-.library-card-content {
-    padding: 15px;
-}
-
-.library-card-content h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.library-card-content p {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 5px;
-}
-
-footer {
-    text-align: center;
-    padding: 1rem 0;
-    margin-top: auto;
-    background-color: #333;
-    color: white;
-}
-
-/* Library Detail Page Styling */
-.library-detail-container {
+    background: white;
     padding: 20px;
-    max-width: 800px;
-    margin: 20px auto;
-    background-color: #fff;
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-.library-detail-container img {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.library-detail-container h2 {
-    color: #4CAF50;
+.library-card h3 {
     margin-bottom: 10px;
+    color: #2196F3;
 }
 
-.library-detail-container p {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 10px;
-}
-
-.library-detail-container ul {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 20px;
-}
-
-.library-detail-container ul li {
-    background-color: #e9e9e9;
+.library-card p {
     margin-bottom: 8px;
-    padding: 8px 15px;
-    border-radius: 5px;
+    color: #666;
+}
+
+/* Admin Panel Styles */
+.admin-panel, .superadmin-panel {
     display: flex;
-    align-items: center;
+    gap: 20px;
 }
 
-.library-detail-container ul li strong {
-    margin-right: 5px;
+.admin-menu {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.back-button {
-    display: inline-block;
-    background-color: #007bff;
+.admin-menu button {
+    padding: 10px;
+    background-color: #607d8b;
     color: white;
-    padding: 10px 20px;
+    border: none;
     border-radius: 5px;
-    text-decoration: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.admin-tab {
+    flex-grow: 1;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-actions {
     margin-top: 20px;
 }
 
-.back-button:hover {
-    background-color: #0056b3;
+.form-actions button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+.action-btn {
+    padding: 5px 10px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background-color: #FFC107;
+    color: black;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.block-btn {
+    background-color: #9E9E9E;
+    color: white;
 }
