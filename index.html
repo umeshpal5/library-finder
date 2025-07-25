@@ -1,227 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyLib Pro - Library Management</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Library Hub Jaipur</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Leaflet Map CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        /* Loading Animation */
-        #loader {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: linear-gradient(135deg, #4a6bff, #6c5ce7);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            color: white;
-        }
-        .loader-logo {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-        .loader-spinner {
-            border: 5px solid rgba(255,255,255,0.3);
-            border-top: 5px solid white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loader">
-        <div class="loader-logo">
-            <i class="fas fa-book-open"></i> StudyLib Pro
-        </div>
-        <div class="loader-spinner"></div>
-        <p>Loading Knowledge Hubs...</p>
-    </div>
 
-    <!-- Main App -->
-    <div id="app" class="hidden">
-        <!-- Login Screen -->
-        <div id="login-screen" class="screen">
-            <div class="login-container">
-                <div class="login-header">
-                    <i class="fas fa-lock"></i>
-                    <h1>Super Admin Login</h1>
-                    <p>Manage all libraries in one place</p>
-                </div>
-                <div class="login-form">
-                    <input type="text" id="superadmin-username" placeholder="Username" value="superadmin" disabled>
-                    <input type="password" id="superadmin-password" placeholder="Password">
-                    <button onclick="login()" class="login-btn">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                </div>
-            </div>
-        </div>
+    <div id="app-container">
 
-        <!-- Super Admin Dashboard -->
-        <div id="dashboard" class="screen hidden">
+        <div id="library-list-view" class="view active">
             <header>
-                <div class="header-left">
-                    <i class="fas fa-book-open logo-icon"></i>
-                    <h1>StudyLib <span>Pro</span></h1>
-                </div>
-                <div class="header-right">
-                    <div class="admin-info">
-                        <i class="fas fa-user-shield"></i>
-                        <span>Super Admin</span>
-                    </div>
-                    <button onclick="logout()" class="logout-btn">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+                <h1>📚 Library Hub Jaipur</h1>
+                <p>अपने आस-पास की बेस्ट लाइब्रेरी खोजें</p>
+                <div class="login-buttons">
+                    <button id="show-super-admin-login-btn">Super Admin Login</button>
+                    <button id="show-admin-login-btn">Library Admin Login</button>
                 </div>
             </header>
-
-            <div class="dashboard-container">
-                <!-- Library Management Section -->
-                <div class="section-title">
-                    <h2><i class="fas fa-library"></i> Library Management</h2>
-                    <button onclick="showAddLibraryModal()" class="add-btn">
-                        <i class="fas fa-plus"></i> Add Library
-                    </button>
+            <main>
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="लाइब्रेरी का नाम खोजें...">
                 </div>
-
-                <div class="library-filters">
-                    <button class="filter-btn active" data-filter="all">All Libraries</button>
-                    <button class="filter-btn" data-filter="active">Active</button>
-                    <button class="filter-btn" data-filter="blocked">Blocked</button>
-                    <button class="filter-btn" data-filter="incomplete">Incomplete</button>
-                </div>
-
-                <div id="libraries-container" class="libraries-grid">
-                    <!-- Libraries will be loaded here -->
-                </div>
-            </div>
+                <div id="library-list-container">
+                    </div>
+            </main>
         </div>
 
-        <!-- Add Library Modal -->
-        <div id="add-library-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-plus-circle"></i> Add New Library</h3>
-                    <button onclick="closeModal()" class="close-btn">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Library Name</label>
-                        <input type="text" id="new-lib-name" placeholder="Sharma Study Point">
+        <div id="super-admin-dashboard-view" class="view">
+            <header>
+                <h1>👑 Super Admin Dashboard</h1>
+                <button id="super-admin-logout-btn">Logout</button>
+            </header>
+            <main>
+                <h2>All Library Admins</h2>
+                <div id="admin-list-container">
                     </div>
-                    <div class="form-group">
-                        <label>Admin Username</label>
-                        <input type="text" id="new-lib-username" placeholder="lib001">
-                    </div>
-                    <div class="form-group">
-                        <label>Admin Password</label>
-                        <input type="text" id="new-lib-password" placeholder="Set password">
-                    </div>
-                    <div class="form-actions">
-                        <button onclick="addNewLibrary()" class="submit-btn">
-                            <i class="fas fa-save"></i> Create Library
-                        </button>
-                    </div>
-                </div>
-            </div>
+            </main>
         </div>
 
-        <!-- Library Details Modal -->
-        <div id="library-details-modal" class="modal hidden">
-            <div class="modal-content wide">
-                <div class="modal-header">
-                    <h3 id="lib-modal-title"><i class="fas fa-library"></i> Library Details</h3>
-                    <button onclick="closeModal()" class="close-btn">&times;</button>
+        <div id="admin-dashboard-view" class="view">
+            <header>
+                <h1 id="admin-library-name">Admin Dashboard</h1>
+                <button id="admin-logout-btn">Logout</button>
+            </header>
+            <main>
+                <div id="library-setup-form" class="modal-content" style="display: none;">
+                    <h2>अपनी लाइब्रेरी सेट करें</h2>
+                    <p>पहली बार लॉगिन करने पर, कृपया अपनी लाइब्रेरी की जानकारी भरें।</p>
+                    <input type="text" id="setup-library-name" placeholder="लाइब्रेरी का नाम" required>
+                    <input type="text" id="setup-library-timings" placeholder="टाइमिंग (जैसे 8 AM - 10 PM)">
+                    <textarea id="setup-library-facilities" placeholder="सुविधाएं (जैसे AC, Wi-Fi, RO Water)"></textarea>
+                    <input type="text" id="setup-library-contact" placeholder="संपर्क नंबर">
+                    <input type="text" id="setup-library-photo" placeholder="फोटो URL (Optional)">
+                    <button id="save-library-setup-btn">Save Information</button>
                 </div>
-                <div class="modal-body">
-                    <div class="lib-details-container">
-                        <div class="lib-info-section">
-                            <h4><i class="fas fa-info-circle"></i> Basic Information</h4>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="info-label">Status:</span>
-                                    <span id="lib-status" class="status-badge active">Active</span>
-                                    <button onclick="toggleLibraryStatus()" id="status-toggle-btn" class="status-btn block">
-                                        <i class="fas fa-ban"></i> Block
-                                    </button>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Admin Username:</span>
-                                    <span id="lib-username">lib001</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Admin Password:</span>
-                                    <span id="lib-password">•••••••</span>
-                                    <button onclick="showPassword()" class="eye-btn">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
 
-                            <h4><i class="fas fa-cogs"></i> Configuration</h4>
-                            <div class="config-actions">
-                                <button onclick="showLibraryStudents()" class="action-btn">
-                                    <i class="fas fa-users"></i> View Students
-                                </button>
-                                <button onclick="showLibrarySetup()" class="action-btn">
-                                    <i class="fas fa-pencil-alt"></i> Edit Profile
-                                </button>
-                                <button onclick="sendCredentials()" class="action-btn">
-                                    <i class="fas fa-paper-plane"></i> Send Credentials
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="lib-stats-section">
-                            <h4><i class="fas fa-chart-bar"></i> Statistics</h4>
-                            <div class="stats-grid">
-                                <div class="stat-card">
-                                    <div class="stat-value" id="total-students">0</div>
-                                    <div class="stat-label">Total Students</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-value" id="active-students">0</div>
-                                    <div class="stat-label">Active Students</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-value" id="fee-due">0</div>
-                                    <div class="stat-label">Fee Due</div>
-                                </div>
-                            </div>
-                        </div>
+                <div id="admin-main-content">
+                    <div class="admin-controls">
+                        <button id="show-add-student-modal-btn">➕ नया स्टूडेंट जोड़ें</button>
                     </div>
+                    <h2>मेरे स्टूडेंट्स</h2>
+                    <div id="student-list-container">
+                        </div>
                 </div>
-            </div>
+            </main>
+        </div>
+
+    </div>
+
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="login-title">Login</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" id="login-submit-btn">Login</button>
+                <p id="login-error" class="error-message"></p>
+            </form>
+        </div>
+    </div>
+    
+    <div id="add-student-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>नया स्टूडेंट जोड़ें</h2>
+            <form id="add-student-form">
+                <input type="text" id="student-name" placeholder="स्टूडेंट का नाम" required>
+                <input type="tel" id="student-mobile" placeholder="मोबाइल नंबर" required>
+                <select id="student-shift" required>
+                    <option value="Full Day">Full Day</option>
+                    <option value="Half Day">Half Day</option>
+                </select>
+                <input type="number" id="student-fee" placeholder="फीस राशि" required>
+                <label for="fee-due-date">अगली फीस की तारीख:</label>
+                <input type="date" id="fee-due-date" required>
+                <button type="submit">Add Student</button>
+            </form>
         </div>
     </div>
 
-    <!-- Leaflet Map JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
-    <script>
-        // Hide loader when page loads
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('loader').style.opacity = '0';
-                setTimeout(function() {
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('app').classList.remove('hidden');
-                }, 500);
-            }, 1500);
-        });
-    </script>
 </body>
 </html>
